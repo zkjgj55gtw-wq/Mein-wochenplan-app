@@ -58,6 +58,30 @@ body.moodcurve-print #moodcurvepages{display:block;background:#fff;padding:12px}
  body.moodcurve-print .moodcurve-summary{background:#f3f3f3!important;print-color-adjust:exact;font-size:11px}
  @page{size:A4 landscape;margin:10mm}
 }
+
+#moodreportpages{display:none}
+body.moodreport-print>header,body.moodreport-print>main,body.moodreport-print>#rangepages,body.moodreport-print>#moodcurvepages{display:none!important}
+body.moodreport-print #moodreportpages{display:block;background:#fff;padding:12px;color:#202820}
+.moodreport-actions{display:flex;gap:8px;margin:0 0 14px}
+.moodreport-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.moodreport-sheet{background:#fff;max-width:1100px;margin:0 auto;padding:8px}
+.moodreport-sheet h2{font-size:22px;margin:0 0 5px}
+.report-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.report-card{border:1px solid #d8ded8;border-radius:8px;padding:12px;background:#f7f9f7}
+.report-card small{display:block;color:#647067;margin-bottom:5px}.report-card strong{font-size:22px}
+.report-section-title{font-size:16px;margin:18px 0 8px}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}.report-table th,.report-table td{border:1px solid #d8ded8;padding:7px;text-align:left}.report-table th{background:#edf1ed}
+.report-note{font-size:12px;color:#647067;margin-top:12px}
+@media(max-width:600px){.report-cards{grid-template-columns:1fr}.moodreport-sheet{padding:2px}.report-table{font-size:11px}.report-table th,.report-table td{padding:5px}}
+@media print{
+ body.moodreport-print>header,body.moodreport-print>main,body.moodreport-print>#rangepages,body.moodreport-print>#moodcurvepages,body.moodreport-print>#reportdialog,body.moodreport-print>#voicedialog,body.moodreport-print>#rangedialog,body.moodreport-print>#mooddialog{display:none!important}
+ body.moodreport-print #moodreportpages{display:block!important;padding:0}
+ body.moodreport-print .moodreport-actions{display:none!important}
+ body.moodreport-print .moodreport-sheet{max-width:none;padding:0}
+ body.moodreport-print .report-card{background:#f7f9f7!important;print-color-adjust:exact}
+ @page{size:A4 portrait;margin:12mm}
+}
+
 </style>
 </head>
 <body>
@@ -66,7 +90,7 @@ body.moodcurve-print #moodcurvepages{display:block;background:#fff;padding:12px}
   <div class="toolbar">
     <button id="prev">← Vorherige Woche</button><div class="weektitle" id="weektitle"></div><button id="next">Nächste Woche →</button>
     <button class="voice" id="voiceopen">🎙 Eintrag diktieren</button>
-    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
+    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
   </div>
   <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
   <div class="printtitle" id="printtitle"></div>
@@ -95,6 +119,16 @@ body.moodcurve-print #moodcurvepages{display:block;background:#fff;padding:12px}
   <div class="modalactions"><button id="moodcancel">Abbrechen</button><button class="primary" id="moodgo">Kurve anzeigen</button></div>
 </dialog>
 <div id="moodcurvepages"></div>
+<dialog id="reportdialog">
+  <div class="modalhead"><h2>Stimmungsauswertung</h2></div>
+  <div class="modalbody">
+    <p>Wähle den Zeitraum für die Auswertung. Es werden nur tatsächlich gespeicherte Stimmungswerte berücksichtigt.</p>
+    <label for="reportfrom">Von</label><input id="reportfrom" type="date">
+    <label for="reportto">Bis</label><input id="reportto" type="date">
+  </div>
+  <div class="modalactions"><button id="reportcancel">Abbrechen</button><button class="primary" id="reportgo">Auswertung anzeigen</button></div>
+</dialog>
+<div id="moodreportpages"></div>
 <dialog id="voicedialog">
   <div class="modalhead"><h2>Einträge diktieren</h2></div>
   <div class="modalbody">
@@ -396,6 +430,39 @@ $('moodgo').onclick=()=>{
  if(!from||!to){alert('Bitte beide Daten auswählen.');return;}
  $('mooddialog').close();makeMoodCurve(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
 };
+
+
+// Separate in-app mood analysis, using the same localStorage data as the weekly planner.
+function openReportDialog(){
+ const start=new Date(anchor);start.setHours(12,0,0,0);const end=new Date(start);end.setDate(end.getDate()+6);
+ $('reportfrom').value=key(start);$('reportto').value=key(end);$('reportdialog').showModal();
+}
+$('moodreport').onclick=openReportDialog;
+$('reportcancel').onclick=()=>$('reportdialog').close();
+function makeMoodReport(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;}
+ const days=[];let d=new Date(start);d.setHours(12,0,0,0);const last=new Date(end);last.setHours(12,0,0,0);
+ while(d<=last){const v=dailyMood(d);days.push({date:new Date(d),...v});d.setDate(d.getDate()+1);}
+ const observed=days.filter(x=>x.average!==null);const count=observed.reduce((n,x)=>n+x.count,0);
+ const overall=count?observed.reduce((n,x)=>n+x.average*x.count,0)/count:null;
+ const best=observed.length?observed.reduce((a,b)=>b.average>a.average?b:a):null;
+ const worst=observed.length?observed.reduce((a,b)=>b.average<a.average?b:a):null;
+ const weeks=new Map();
+ for(const day of observed){const mon=mondayOf(day.date),k=key(mon);if(!weeks.has(k))weeks.set(k,{monday:mon,sum:0,count:0,days:0});const w=weeks.get(k);w.sum+=day.average*day.count;w.count+=day.count;w.days++;}
+ const weekRows=[...weeks.values()].sort((a,b)=>a.monday-b.monday);
+ const fmtAvg=n=>n===null?'–':n.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+ const cards=`<div class="report-cards"><div class="report-card"><small>Durchschnitt im Zeitraum</small><strong>${fmtAvg(overall)} / 10</strong></div><div class="report-card"><small>Stimmungswerte erfasst</small><strong>${count}</strong></div><div class="report-card"><small>Tage mit Einträgen</small><strong>${observed.length}</strong></div></div>`;
+ const extrema=`<h3 class="report-section-title">Beste und schwierigste Tage</h3><table class="report-table"><thead><tr><th>Auswertung</th><th>Tag</th><th>Tagesdurchschnitt</th><th>Werte</th></tr></thead><tbody>${best?`<tr><td>Höchster Wert</td><td>${fmt(best.date)}</td><td>${fmtAvg(best.average)} / 10</td><td>${best.count}</td></tr>`:'<tr><td colspan="4">Noch keine Stimmungswerte im Zeitraum.</td>'}${worst?`<tr><td>Niedrigster Wert</td><td>${fmt(worst.date)}</td><td>${fmtAvg(worst.average)} / 10</td><td>${worst.count}</td></tr>`:''}</tbody></table>`;
+ const rows=weekRows.map(w=>`<tr><td>${fmt(w.monday)} – ${fmt(new Date(w.monday.getFullYear(),w.monday.getMonth(),w.monday.getDate()+6,12))}</td><td>${fmtAvg(w.sum/w.count)} / 10</td><td>${w.days}</td><td>${w.count}</td></tr>`).join('');
+ const weekly=`<h3 class="report-section-title">Vergleich der Kalenderwochen</h3><table class="report-table"><thead><tr><th>Kalenderwoche</th><th>Durchschnitt</th><th>Tage mit Werten</th><th>Anzahl Werte</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Noch keine Stimmungswerte im Zeitraum.</td></tr>'}</tbody></table>`;
+ let trend='Noch kein Wochenvergleich möglich.';if(weekRows.length>=2){const first=weekRows[0].sum/weekRows[0].count,lastw=weekRows[weekRows.length-1].sum/weekRows[weekRows.length-1].count;const diff=lastw-first;trend=`Die erste erfasste Woche lag bei ${fmtAvg(first)} / 10, die letzte bei ${fmtAvg(lastw)} / 10. Veränderung: ${diff>0?'+':''}${fmtAvg(diff)} Punkte.`;}
+ const pages=$('moodreportpages');pages.innerHTML='<div class="moodreport-actions"><button type="button" id="report-print-now">Drucken / als PDF</button><button type="button" id="report-back">Zurück zum Wochenplan</button></div>';
+ const sheet=document.createElement('section');sheet.className='moodreport-sheet';
+ sheet.innerHTML=`<h2>Stimmungsauswertung</h2><p class="moodcurve-subtitle">${fmt(start)} bis ${fmt(end)}</p>${cards}${extrema}${weekly}<h3 class="report-section-title">Entwicklung</h3><p>${trend}</p><p class="report-note">Die Auswertung beschreibt die eingetragenen Stimmungswerte. Tage ohne Angaben werden nicht als Null gewertet. Das ist keine medizinische Diagnose.</p>`;
+ pages.appendChild(sheet);document.body.classList.add('moodreport-print');
+ $('report-print-now').onclick=()=>window.print();$('report-back').onclick=()=>{document.body.classList.remove('moodreport-print');pages.innerHTML='';};
+}
+$('reportgo').onclick=()=>{const from=$('reportfrom').value,to=$('reportto').value;if(!from||!to){alert('Bitte beide Daten auswählen.');return;} $('reportdialog').close();makeMoodReport(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));};
 
 // Siri-Kurzbefehl / URL-Übergabe (funktioniert, wenn die App über HTTPS bereitgestellt ist):
 // Beispiel: https://DEINE-APP-URL/?diktat=Dienstag%2010%20Uhr%20Einkaufen%20Stimmung%204
