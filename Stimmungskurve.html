@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#20372b">
+<title>Mein Wochenplan</title>
+<style>
+:root{--ink:#202820;--muted:#647067;--line:#d8ded8;--paper:#fff;--bg:#f0f3ef;--green:#294b38}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{background:#20372b;color:white;padding:22px 18px 20px}header .wrap,main{max-width:1500px;margin:auto}header h1{font-size:26px;margin:0 0 5px}header p{font-size:14px;margin:0;color:#d5e1d8}
+main{padding:14px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}.toolbar button,.toolbar label{border:1px solid var(--line);border-radius:9px;background:white;padding:10px 13px;font-size:14px;color:var(--ink);cursor:pointer}.weektitle{font-weight:bold;margin-right:auto;font-size:15px}.hint{color:var(--muted);font-size:12px;margin:0 0 10px;line-height:1.5}.gridwrap{overflow:auto;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px #20372b0a}.weekgrid{border-collapse:collapse;table-layout:fixed;width:100%;min-width:950px}.weekgrid th,.weekgrid td{border:1px solid var(--line);padding:0}.weekgrid thead th{background:#eaf0eb;padding:9px 4px;text-align:center;font-size:12px}.weekgrid thead th:first-child{width:58px}.weekgrid tbody th{background:#f5f7f4;width:58px;text-align:center;font-size:12px;color:#4d5b51;font-weight:600}.slot{height:52px;vertical-align:top}.cell{padding:3px;display:flex;flex-direction:column;gap:3px;min-height:51px}.activity{width:100%;min-width:0;border:1px solid transparent;border-radius:4px;background:transparent;font:12px Arial,sans-serif;color:var(--ink);padding:4px 3px;resize:vertical;min-height:25px;max-height:70px}.activity:focus{outline:1px solid #73957c;background:#fbfdfb;border-color:#9db4a2}.mood{width:100%;min-width:0;border:1px solid #e1e6e0;background:#f8faf7;border-radius:4px;padding:3px 1px;font-size:11px;color:var(--ink)}.toolbar .primary{background:var(--green);color:white;border-color:var(--green)}.toolbar .voice{background:#e8f0e9;border-color:#b9cbbb;color:#20372b;font-weight:bold}.status{font-size:12px;color:var(--muted);min-height:16px}.note{margin-top:12px;padding:12px 14px;background:white;border:1px solid var(--line);border-radius:10px}.note label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}.note textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px;font:13px Arial;min-height:60px;resize:vertical}.printtitle{display:none}
+dialog{width:min(600px,calc(100% - 24px));border:0;border-radius:16px;padding:0;box-shadow:0 16px 60px #0004;color:var(--ink)}dialog::backdrop{background:#15251dcc}.modalhead{padding:17px 19px;background:#20372b;color:white}.modalhead h2{margin:0;font-size:19px}.modalbody{padding:18px}.modalbody p{font-size:13px;line-height:1.5;color:var(--muted)}.modalbody label{display:block;font-size:13px;font-weight:bold;margin:12px 0 5px}.modalbody input,.modalbody textarea,.modalbody select{width:100%;font:15px Arial;padding:11px;border:1px solid var(--line);border-radius:8px;background:#fff}.modalbody textarea{min-height:90px}.modalactions{display:flex;gap:8px;justify-content:flex-end;padding:0 18px 18px}.modalactions button{border:1px solid var(--line);border-radius:9px;background:white;padding:11px 14px;font-size:14px}.modalactions .primary{background:var(--green);color:white;border-color:var(--green)}.voicebox{display:flex;align-items:center;gap:12px;background:#f0f4f0;border-radius:12px;padding:12px}.voicebox button{border:0;border-radius:50%;width:52px;height:52px;background:var(--green);color:white;font-size:24px;cursor:pointer;flex-shrink:0}.voicebox button.listening{background:#a43d37;animation:pulse 1.4s infinite}.voicebox div{font-size:13px;line-height:1.4}.small{font-size:12px!important}
+@keyframes pulse{50%{opacity:.65}}
+@media(max-width:650px){header{padding:18px 14px}header h1{font-size:23px}main{padding:10px}.weektitle{width:100%}.toolbar button{padding:9px 10px}.weekgrid{min-width:900px}}
+@media print{@page{size:A4 landscape;margin:8mm}body{background:white;color:#111;font-size:9px}header{background:white;color:#111;padding:0 0 8px}header h1{font-size:18px}header p{color:#333;font-size:9px}.toolbar,.hint,.status{display:none!important}main{padding:0;max-width:none}.gridwrap{overflow:visible;border:0;box-shadow:none;border-radius:0}.weekgrid{min-width:0;width:100%;border-collapse:collapse}.weekgrid thead th{background:#eee!important;print-color-adjust:exact;padding:4px 2px;font-size:9px}.weekgrid thead th:first-child,.weekgrid tbody th{width:36px}.weekgrid tbody th{font-size:8px}.slot{height:22px}.cell{padding:1px;min-height:21px;gap:0}.activity{font-size:8px;min-height:13px;max-height:none;padding:1px;border:0;resize:none;overflow:hidden}.mood{font-size:8px;padding:0;border:0;background:white}.note{margin-top:6px;padding:5px;border-radius:0}.note label{font-size:9px;margin-bottom:3px}.note textarea{min-height:30px;height:30px;font-size:9px;padding:3px;border:0}.printtitle{display:block;font-size:10px;margin-bottom:5px}dialog{display:none!important}}
+
+#rangepages{display:none}
+body.range-print>header,body.range-print>main{display:none!important}
+body.range-print #rangepages{display:block;padding:12px;background:white}
+.range-actions{display:flex;gap:8px;margin:0 0 12px}
+.range-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+
+@media print{
+  body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
+  body.range-print #rangepages{display:block!important}
+  .range-page{break-after:page;page-break-after:always;padding:0}
+  .range-page:last-child{break-after:auto;page-break-after:auto}
+  .range-page h2{font-size:15px;margin:0 0 5px}
+  .range-page .range-subtitle{font-size:9px;margin:0 0 6px}
+  .range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8px}
+  .range-table th,.range-table td{border:1px solid #999;padding:2px;vertical-align:top}
+  .range-table th{background:#eee!important;print-color-adjust:exact}
+  .range-table th:first-child{width:40px}
+  .range-table .r-hour{width:40px;text-align:center}
+  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .range-table .r-mood{font-size:7px;color:#333}
+  .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
+  @page{size:A4 landscape;margin:8mm}
+}
+#moodcurvepages{display:none}
+body.moodcurve-print>header,body.moodcurve-print>main,body.moodcurve-print>#rangepages{display:none!important}
+body.moodcurve-print #moodcurvepages{display:block;background:#fff;padding:12px}
+.moodcurve-actions{display:flex;gap:8px;margin:0 0 14px}
+.moodcurve-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.moodcurve-sheet{background:#fff;color:#202820;max-width:1100px;margin:0 auto;padding:8px}
+.moodcurve-sheet h2{font-size:22px;margin:0 0 5px}
+.moodcurve-subtitle{color:#647067;font-size:13px;margin:0 0 12px}
+.moodcurve-chart{width:100%;height:auto;display:block;max-height:65vh}
+.moodcurve-summary{font-size:14px;margin-top:12px;padding:12px;background:#f0f3ef;border-radius:8px}
+.moodcurve-key{font-size:12px;color:#647067;margin-top:8px}
+@media print{
+ body.moodcurve-print>header,body.moodcurve-print>main,body.moodcurve-print>#rangepages,body.moodcurve-print>#mooddialog,body.moodcurve-print>#rangedialog,body.moodcurve-print>#voicedialog{display:none!important}
+ body.moodcurve-print #moodcurvepages{display:block!important;padding:0}
+ body.moodcurve-print .moodcurve-actions{display:none!important}
+ body.moodcurve-print .moodcurve-sheet{max-width:none;padding:0;break-inside:avoid;page-break-inside:avoid}
+ body.moodcurve-print .moodcurve-chart{max-height:145mm;width:100%}
+ body.moodcurve-print .moodcurve-summary{background:#f3f3f3!important;print-color-adjust:exact;font-size:11px}
+ @page{size:A4 landscape;margin:10mm}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div></header>
+<main>
+  <div class="toolbar">
+    <button id="prev">← Vorherige Woche</button><div class="weektitle" id="weektitle"></div><button id="next">Nächste Woche →</button>
+    <button class="voice" id="voiceopen">🎙 Eintrag diktieren</button>
+    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
+  </div>
+  <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
+  <div class="printtitle" id="printtitle"></div>
+  <div class="gridwrap"><table class="weekgrid" id="weekgrid"><thead><tr id="headrow"><th>Uhrzeit</th></tr></thead><tbody id="body"></tbody></table></div>
+  <section class="note"><label for="weeknote">Notizen zur Woche (optional)</label><textarea id="weeknote" placeholder="Freie Notizen oder Punkte, die du beim Gespräch ansprechen möchtest …"></textarea></section>
+  <p class="status" id="status" aria-live="polite">Änderungen werden lokal gespeichert.</p>
+</main>
+
+<dialog id="rangedialog">
+  <div class="modalhead"><h2>PDF für Zeitraum erstellen</h2></div>
+  <div class="modalbody">
+    <p>Wähle den gewünschten Zeitraum. Jede betroffene Kalenderwoche wird auf einer eigenen A4-Seite im Querformat ausgegeben.</p>
+    <label for="rangefrom">Von</label><input id="rangefrom" type="date">
+    <label for="rangeto">Bis</label><input id="rangeto" type="date">
+  </div>
+  <div class="modalactions"><button id="rangecancel">Abbrechen</button><button class="primary" id="rangego">PDF vorbereiten</button></div>
+</dialog>
+<div id="rangepages"></div>
+<dialog id="mooddialog">
+  <div class="modalhead"><h2>Stimmungskurve erstellen</h2></div>
+  <div class="modalbody">
+    <p>Wähle den Zeitraum. Für jeden Tag wird der Durchschnitt aller eingetragenen Stimmungswerte (1 bis 10) berechnet. Tage ohne Einträge bleiben als Lücke sichtbar.</p>
+    <label for="moodfrom">Von</label><input id="moodfrom" type="date">
+    <label for="moodto">Bis</label><input id="moodto" type="date">
+  </div>
+  <div class="modalactions"><button id="moodcancel">Abbrechen</button><button class="primary" id="moodgo">Kurve anzeigen</button></div>
+</dialog>
+<div id="moodcurvepages"></div>
+<dialog id="voicedialog">
+  <div class="modalhead"><h2>Einträge diktieren</h2></div>
+  <div class="modalbody">
+    <p>Sprich einen oder mehrere Einträge. Nenne möglichst Tag, Uhrzeit, Aktivität und Stimmung von 1 bis 10. Die erkannten Angaben werden nicht automatisch gespeichert, sondern zuerst zur Kontrolle angezeigt.</p>
+    <div class="voicebox"><button id="startvoice" aria-label="Diktat starten">🎙</button><div><strong id="voicestatus">Bereit zum Diktieren</strong><br><span id="voicedetail">Tippe auf das Mikrofon, um zu beginnen.</span></div></div>
+    <label for="speechtext">Erkannter Text (auch manuell editierbar)</label><textarea id="speechtext" placeholder="Zum Beispiel: Dienstag 10 Uhr Einkaufen Stimmung 4. Dienstag 14 Uhr Streit Stimmung 2."></textarea>
+    <p class="small">Hinweis: Die Web-Spracherkennung wird nicht von jedem iPhone-Browser unterstützt. Falls das Mikrofon nicht funktioniert, nutze das Mikrofon der iPhone-Tastatur in diesem Textfeld und tippe anschließend auf „Einträge erkennen“.</p>
+    <div id="parsedarea" hidden>
+      <label>Erkannte Einträge – bitte prüfen</label>
+      <div id="parsedlist"></div>
+    </div>
+  </div>
+  <div class="modalactions"><button id="closevoice">Abbrechen</button><button id="parsevoice">Einträge erkennen</button><button class="primary" id="savevoice" hidden>Geprüfte Einträge übernehmen</button></div>
+</dialog>
+<script>
+const DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const $=id=>document.getElementById(id);
+let anchor=new Date();anchor.setHours(12,0,0,0);anchor.setDate(anchor.getDate()-(anchor.getDay()===0?6:anchor.getDay()-1));
+let all=readStore(), recognition=null, parsed=[];
+function readStore(){try{return JSON.parse(localStorage.getItem('meinWochenplanV2')||'{}')}catch(e){return {}}}
+function key(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function current(){if(!all[key(anchor)])all[key(anchor)]={cells:{},note:''};return all[key(anchor)]}
+function fmt(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function weekRange(){let e=new Date(anchor);e.setDate(e.getDate()+6);return `${fmt(anchor)} – ${fmt(e)}`}
+function persist(message='Gespeichert'){localStorage.setItem('meinWochenplanV2',JSON.stringify(all));$('status').textContent=message+' · lokal auf diesem Gerät'}
+function render(){
+ $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();
+ const h=$('headrow');h.innerHTML='<th>Uhrzeit</th>';
+ DAYS.forEach((day,i)=>{let d=new Date(anchor);d.setDate(d.getDate()+i);let th=document.createElement('th');th.textContent=day+' '+fmt(d).slice(0,5);h.appendChild(th)});
+ const body=$('body');body.innerHTML='';
+ for(let hour=5;hour<=23;hour++){
+  const tr=document.createElement('tr');const th=document.createElement('th');th.textContent=String(hour).padStart(2,'0')+':00';tr.appendChild(th);
+  DAYS.forEach((day,i)=>{const d=new Date(anchor);d.setDate(d.getDate()+i);const id=key(d)+'_'+hour;const data=current().cells[id]||{activity:'',mood:''};const td=document.createElement('td');td.className='slot';const cell=document.createElement('div');cell.className='cell';
+   const activity=document.createElement('textarea');activity.className='activity';activity.rows=1;activity.placeholder='Aktivität …';activity.setAttribute('aria-label',day+', '+hour+' Uhr, Aktivität');activity.value=data.activity||'';
+   const mood=document.createElement('select');mood.className='mood';mood.setAttribute('aria-label',day+', '+hour+' Uhr, Stimmung');mood.innerHTML='<option value="">Stimmung –</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=data.mood||'';
+   activity.addEventListener('input',()=>{current().cells[id]={activity:activity.value,mood:mood.value};persist()});
+   mood.addEventListener('change',()=>{current().cells[id]={activity:activity.value,mood:mood.value};persist()});
+   cell.append(activity,mood);td.appendChild(cell);tr.appendChild(td);
+  });body.appendChild(tr);
+ }
+ $('weeknote').value=current().note||'';
+}
+$('weeknote').addEventListener('input',()=>{current().note=$('weeknote').value;persist()});
+$('prev').onclick=()=>{anchor.setDate(anchor.getDate()-7);render()};
+$('next').onclick=()=>{anchor.setDate(anchor.getDate()+7);render()};
+$('print').onclick=()=>window.print();
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('importbtn').onclick=()=>$('importfile').click();
+$('importfile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error();if(confirm('Import ersetzt alle derzeit gespeicherten Wochenpläne. Fortfahren?')){all=obj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();persist('Import abgeschlossen')}}catch(err){alert('Diese Datei ist kein gültiger Wochenplan-Export.')}e.target.value=''};
+$('voiceopen').onclick=()=>{$('voicedialog').showModal();$('speechtext').value='';$('parsedarea').hidden=true;$('savevoice').hidden=true;parsed=[];$('voicestatus').textContent='Bereit zum Diktieren';$('voicedetail').textContent='Tippe auf das Mikrofon, um zu beginnen.'};
+$('closevoice').onclick=()=>{if(recognition)try{recognition.stop()}catch{};$('voicedialog').close()};
+$('startvoice').onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$('voicestatus').textContent='Spracherkennung nicht verfügbar';$('voicedetail').textContent='Nutze bitte das Mikrofon deiner iPhone-Tastatur im Textfeld unten.';$('speechtext').focus();return}
+ try{
+  recognition=new SR();recognition.lang='de-DE';recognition.continuous=true;recognition.interimResults=true;
+  $('startvoice').classList.add('listening');$('voicestatus').textContent='Ich höre zu …';$('voicedetail').textContent='Sprich deine Einträge. Tippe erneut auf das Mikrofon, um zu stoppen.';
+  recognition.onresult=event=>{let finalText='';let interim='';for(let i=0;i<event.results.length;i++){if(event.results[i].isFinal)finalText+=event.results[i][0].transcript+' ';else interim+=event.results[i][0].transcript}if(finalText)$('speechtext').value=($('speechtext').value+' '+finalText).trim();$('voicedetail').textContent=interim||'Sprache erkannt. Du kannst weiter diktieren.'};
+  recognition.onerror=event=>{$('voicestatus').textContent='Mikrofonproblem: '+event.error;$('voicedetail').textContent='Prüfe die Mikrofonberechtigung oder nutze die iPhone-Tastatur.';$('startvoice').classList.remove('listening')};
+  recognition.onend=()=>{$('startvoice').classList.remove('listening');$('voicestatus').textContent='Diktat beendet';$('voicedetail').textContent='Prüfe den Text und tippe auf „Einträge erkennen“.';
+  };
+  if($('startvoice').dataset.active==='1'){recognition.stop();$('startvoice').dataset.active='0';$('startvoice').classList.remove('listening')}else{$('startvoice').dataset.active='1';recognition.start()}
+  recognition.onend=()=>{$('startvoice').dataset.active='0';$('startvoice').classList.remove('listening');$('voicestatus').textContent='Diktat beendet';$('voicedetail').textContent='Prüfe den Text und tippe auf „Einträge erkennen“.'};
+ }catch(e){$('voicestatus').textContent='Diktat konnte nicht starten';$('voicedetail').textContent='Nutze das Mikrofon deiner Tastatur oder prüfe die Berechtigungen.';$('startvoice').classList.remove('listening')}
+};
+function norm(s){return s.toLocaleLowerCase('de-DE').replace(/[.,;!?]/g,' ').replace(/\s+/g,' ').trim()}
+function parseSpeech(text){
+ const dayWords=[['montag',0],['dienstag',1],['mittwoch',2],['donnerstag',3],['freitag',4],['samstag',5],['sonntag',6]];
+ const wordNums={zehn:10,eins:1,ein:1,zwei:2,drei:3,vier:4,fünf:5,fuenf:5,sechs:6,sieben:7,acht:8,neun:9};
+ // Split on explicit time expressions, so several entries can be dictated in one go.
+ const timeRe=/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*uhr\b/ig;
+ const matches=[...text.matchAll(timeRe)];
+ if(!matches.length)return parseSpeechFallback(text,dayWords,wordNums);
+ const chunks=[];
+ for(let i=0;i<matches.length;i++){
+   const m=matches[i],from=m.index,to=i+1<matches.length?matches[i+1].index:text.length;
+   const prefix=i===0?text.slice(0,from):'';
+   chunks.push({raw:(prefix+' '+text.slice(from,to)).trim(),time:Number(m[1])});
+ }
+ let inheritedDay=null;const out=[];
+ for(const chunk of chunks){
+   const s=chunk.raw.toLocaleLowerCase('de-DE');let dayIndex=-1;
+   for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b','i').test(s)){dayIndex=idx;inheritedDay=idx;break}}
+   if(dayIndex<0)dayIndex=inheritedDay;
+   const hour=chunk.time;if(hour<5||hour>23)continue;
+   const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+   let mood=null;
+   const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/i);
+   if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+   else {const nums=[...s.matchAll(/\b(10|[1-9])\b/g)].map(m=>Number(m[1]));if(nums.length>1)mood=nums[nums.length-1]}
+   if(mood!==null&&(mood<1||mood>10))mood=null;
+   let activity=chunk.raw;
+   activity=activity.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'');
+   activity=activity.replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*uhr\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,;:.!?-]+|[\s,;:.!?-]+$/g,'').trim();
+   if(!activity)activity='Aktivität bitte ergänzen';
+   out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
+ }
+ return out;
+}
+function parseSpeechFallback(text,dayWords,wordNums){
+ const sentences=text.replace(/\n/g,'. ').split(/[.;!?]+/).map(s=>s.trim()).filter(Boolean),out=[];let inheritedDay=null;
+ for(const sentence of sentences){
+  const s=sentence.toLocaleLowerCase('de-DE');let dayIndex=-1;
+  for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b').test(s)){dayIndex=idx;inheritedDay=idx;break}}
+  if(dayIndex<0)dayIndex=inheritedDay;
+  const timeMatch=s.match(/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(?:uhr)?\b/);
+  if(!timeMatch)continue;const hour=Number(timeMatch[1]);if(hour<5||hour>23)continue;
+  const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+  let mood=null;const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/);
+  if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+  let activity=sentence.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'').replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*(?:uhr)?\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,:-]+|[\s,:-]+$/g,'').trim();
+  if(!activity)activity='Aktivität bitte ergänzen';
+  out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
+ }
+ return out;
+}
+$('parsevoice').onclick=()=>{
+ parsed=parseSpeech($('speechtext').value);
+ if(!parsed.length){$('parsedarea').hidden=false;$('parsedlist').textContent='Ich konnte keine eindeutigen Uhrzeiten zwischen 05:00 und 23:00 Uhr erkennen. Bitte schreibe beispielsweise: „Dienstag, 10 Uhr, Einkaufen, Stimmung 4.“';$('savevoice').hidden=true;return}
+ $('parsedarea').hidden=false;$('parsedlist').innerHTML='';
+ parsed.forEach((p,i)=>{
+  const box=document.createElement('div');box.style.cssText='border:1px solid #d8ded8;border-radius:9px;padding:10px;margin:7px 0';
+  box.innerHTML=`<label>Tag und Uhrzeit</label><div style="display:flex;gap:7px"><select data-k="day" style="flex:2;padding:8px;border:1px solid #d8ded8;border-radius:7px">${DAYS.map((d,n)=>`<option value="${n}" ${d===p.day?'selected':''}>${d}</option>`).join('')}</select><select data-k="hour" style="flex:1;padding:8px;border:1px solid #d8ded8;border-radius:7px">${Array.from({length:19},(_,n)=>n+5).map(h=>`<option value="${h}" ${h===p.hour?'selected':''}>${String(h).padStart(2,'0')}:00</option>`).join('')}</select></div><label>Aktivität</label><input data-k="activity" value=""><label>Stimmung (1 = schlecht, 10 = gut)</label><select data-k="mood"><option value="">Nicht angegeben</option>${Array.from({length:10},(_,n)=>n+1).map(n=>`<option value="${n}" ${String(n)===String(p.mood)?'selected':''}>${n}</option>`).join('')}</select>`;
+  box.querySelector('[data-k="activity"]').value=p.activity;
+  box.dataset.index=i;$('parsedlist').appendChild(box);
+ });$('savevoice').hidden=false;
+};
+$('savevoice').onclick=()=>{
+ const boxes=[...$('parsedlist').children];let count=0;
+ boxes.forEach(box=>{const val=k=>box.querySelector(`[data-k="${k}"]`).value;const di=Number(val('day'));const date=new Date(anchor);date.setDate(date.getDate()+di);const hour=Number(val('hour'));const id=key(date)+'_'+hour;const targetMonday=new Date(date);targetMonday.setDate(targetMonday.getDate()-(targetMonday.getDay()===0?6:targetMonday.getDay()-1));const weekKey=key(targetMonday);if(!all[weekKey])all[weekKey]={cells:{},note:''};all[weekKey].cells[id]={activity:val('activity').trim(),mood:val('mood')};count++});
+ persist(`${count} Einträge übernommen`);render();$('voicedialog').close();
+};
+
+function escapeHtml(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function parseGermanDate(s){
+ const m=String(s).match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+ if(!m)return null;
+ const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),12,0,0,0);
+ return d.getFullYear()===Number(m[3])&&d.getMonth()===Number(m[2])-1&&d.getDate()===Number(m[1])?d:null;
+}
+function mondayOf(date){
+ const d=new Date(date);d.setHours(12,0,0,0);
+ d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;
+}
+function printDateRange(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
+  alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
+ }
+ const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ let monday=mondayOf(start);
+ while(monday<=end){
+  const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
+  const week=all[key(monday)]||{cells:{},note:''};
+  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
+  const dates=[];
+  for(let i=0;i<7;i++){
+   const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
+   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+   table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
+  }
+  table+='</tr></thead><tbody>';
+  for(let hour=5;hour<=23;hour++){
+   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
+   for(const d of dates){
+    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+    const data=week.cells?.[key(d)+'_'+hour]||{};
+    const activity=inRange?(data.activity||''):'';
+    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
+    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
+   }
+   table+='</tr>';
+  }
+  table+='</tbody></table>';
+  const section=document.createElement('section');section.className='range-page';
+  const note=(week.note||'').trim();
+  section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
+  pages.appendChild(section);
+  monday.setDate(monday.getDate()+7);
+ }
+ document.body.classList.add('range-print');
+ $('range-print-now').onclick=()=>window.print();
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
+ try{window.print()}catch(e){}
+}
+function openRangeDialog(fromDate=null,toDate=null){
+ const start=fromDate instanceof Date && !isNaN(fromDate) ? fromDate : anchor;
+ const end=toDate instanceof Date && !isNaN(toDate) ? toDate : new Date(start);
+ if(!(toDate instanceof Date) || isNaN(toDate)) end.setDate(end.getDate()+6);
+ $('rangefrom').value=key(start);
+ $('rangeto').value=key(end);
+ $('rangedialog').showModal();
+}
+$('rangeprint').onclick=openRangeDialog;
+// Best-effort handoff to Safari on iOS. Custom URL scheme support can vary by iOS version.
+$('opensafari').onclick=()=>{
+ const normalUrl='https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ const safariUrl='x-safari-https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ try { window.location.href=safariUrl; } catch(e) {}
+ setTimeout(()=>{
+   alert('Falls Safari nicht geöffnet wurde: Kopiere diese Adresse und füge sie in Safari ein: '+normalUrl);
+ },900);
+};
+$('rangecancel').onclick=()=>$('rangedialog').close();
+$('rangego').onclick=()=>{
+ const from=$('rangefrom').value,to=$('rangeto').value;
+ if(!from||!to){alert('Bitte beide Daten auswählen.');return}
+ $('rangedialog').close();
+ printDateRange(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
+};
+function extractPdfDates(text){
+ const t=String(text||'').toLocaleLowerCase('de-DE');
+ const monthMap={januar:1,jan:1,februar:2,feb:2,maerz:3,märz:3,mar:3,april:4,apr:4,mai:5,juni:6,jun:6,juli:7,jul:7,august:8,aug:8,september:9,sep:9,oktober:10,okt:10,november:11,nov:11,dezember:12,dez:12};
+ const found=[];
+ // Numeric German dates, ISO dates, and spoken-style dates such as "1. Oktober 2026".
+ const re=/(\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\b|\b\d{1,2}\.?\s*(?:januar|jan|februar|feb|maerz|märz|mar|april|apr|mai|juni|jun|juli|jul|august|aug|september|sep|oktober|okt|november|nov|dezember|dez)\s+\d{4}\b)/ig;
+ for(const m of t.matchAll(re)){
+  const raw=m[0].trim();let d=null;
+  if(/^\d{4}-/.test(raw)){const [y,mo,da]=raw.split('-').map(Number);d=new Date(y,mo-1,da,12);if(d.getFullYear()!==y||d.getMonth()!==mo-1||d.getDate()!==da)d=null;}
+  else if(/\d{1,2}\.\s*\d{1,2}\./.test(raw)){d=parseGermanDate(raw.replace(/\s+/g,''));}
+  else {const x=raw.match(/^(\d{1,2})\.?\s*([a-zä]+)\s+(\d{4})$/i);if(x){const mo=monthMap[x[2]];if(mo){d=new Date(Number(x[3]),mo-1,Number(x[1]),12);if(d.getFullYear()!==Number(x[3])||d.getMonth()!==mo-1||d.getDate()!==Number(x[1]))d=null;}}}
+  if(d)found.push(d);
+ }
+ return found;
+}
+function handlePdfHandoff(text){
+ const t=String(text||'').trim();
+ if(!/(pdf|drucken|drucke|ausdruck)/i.test(t))return false;
+ const dates=extractPdfDates(t);
+ // Always open the date dialog in the browser. Populate it with the spoken dates
+ // when both dates were recognized, instead of trying to print immediately.
+ if(dates.length>=2){
+  if(dates[0]<=dates[1])openRangeDialog(dates[0],dates[1]);
+  else {openRangeDialog();$('status').textContent='Das Enddatum liegt vor dem Startdatum. Bitte prüfe die Datumsfelder.';}
+ }else{
+  openRangeDialog();
+  $('status').textContent='PDF-Befehl erkannt, aber beide Daten konnten nicht sicher erkannt werden. Bitte trage sie im Dialog ein.';
+ }
+ return true;
+}
+render();
+
+// Stimmungskurve für einen frei gewählten Zeitraum
+function openMoodDialog(){
+ const start=new Date(anchor);start.setHours(12,0,0,0);
+ const end=new Date(start);end.setDate(end.getDate()+6);
+ $('moodfrom').value=key(start);$('moodto').value=key(end);$('mooddialog').showModal();
+}
+$('moodcurve').onclick=openMoodDialog;
+$('moodcancel').onclick=()=>$('mooddialog').close();
+function dailyMood(date){
+ const monday=mondayOf(date),week=all[key(monday)];
+ if(!week||!week.cells)return {average:null,count:0};
+ const values=[];
+ for(let hour=5;hour<=23;hour++){
+  const v=Number(week.cells[key(date)+'_'+hour]?.mood);
+  if(Number.isFinite(v)&&v>=1&&v<=10)values.push(v);
+ }
+ return {average:values.length?values.reduce((a,b)=>a+b,0)/values.length:null,count:values.length};
+}
+function makeMoodCurve(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;}
+ const days=[];let d=new Date(start);d.setHours(12,0,0,0);const last=new Date(end);last.setHours(12,0,0,0);
+ while(d<=last){const v=dailyMood(d);days.push({date:new Date(d),...v});d.setDate(d.getDate()+1);}
+ const total=days.reduce((sum,x)=>sum+x.count,0),allValues=days.filter(x=>x.average!==null);
+ const overall=total?days.reduce((sum,x)=>sum+(x.average===null?0:x.average*x.count),0)/total:null;
+ const W=1100,H=500,L=68,R=28,T=35,B=72,plotW=W-L-R,plotH=H-T-B;
+ const x=i=>days.length<=1?L+plotW/2:L+i*plotW/(days.length-1);
+ const y=v=>T+(10-v)*plotH/9;
+ let svg=`<svg class="moodcurve-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Stimmungskurve mit täglichen Durchschnittswerten von 1 bis 10">`;
+ for(let v=1;v<=10;v++){
+  const yy=y(v);svg+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#d8ded8" stroke-width="1"/>`;
+  svg+=`<text x="${L-16}" y="${yy+5}" text-anchor="end" font-size="15" fill="#354238">${v}</text>`;
+ }
+ svg+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#667168"/><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#667168"/>`;
+ // Draw line segments only between adjacent days with values; missing days remain visible as gaps.
+ for(let i=0;i<days.length-1;i++){
+  if(days[i].average!==null&&days[i+1].average!==null){svg+=`<line x1="${x(i)}" y1="${y(days[i].average)}" x2="${x(i+1)}" y2="${y(days[i+1].average)}" stroke="#294b38" stroke-width="3" stroke-linecap="round"/>`;}
+ }
+ days.forEach((day,i)=>{
+  if(day.average!==null){svg+=`<circle cx="${x(i)}" cy="${y(day.average)}" r="5" fill="#294b38" stroke="#fff" stroke-width="2"><title>${fmt(day.date)}: ${day.average.toLocaleString('de-DE',{maximumFractionDigits:1})} aus ${day.count} Eintrag/Einträgen</title></circle>`;}
+  const stride=Math.max(1,Math.ceil(days.length/12));
+  if(i%stride===0||i===days.length-1){const label=day.date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});svg+=`<text x="${x(i)}" y="${H-B+25}" text-anchor="middle" font-size="13" fill="#354238">${label}</text>`;}
+ });
+ svg+=`<text x="${L}" y="20" font-size="14" fill="#354238">Stimmung (1 = schlecht, 10 = gut)</text></svg>`;
+ const pages=$('moodcurvepages');pages.innerHTML='<div class="moodcurve-actions"><button type="button" id="mood-print-now">Drucken / als PDF</button><button type="button" id="mood-back">Zurück zum Wochenplan</button></div>';
+ const sheet=document.createElement('section');sheet.className='moodcurve-sheet';
+ const summary=overall===null?'Für diesen Zeitraum sind noch keine Stimmungswerte eingetragen.':`Durchschnitt im Zeitraum: <strong>${overall.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} / 10</strong> · ${total} Stimmungswert(e) an ${allValues.length} Tag(en) erfasst.`;
+ sheet.innerHTML=`<h2>Stimmungskurve</h2><p class="moodcurve-subtitle">${fmt(start)} bis ${fmt(end)} · Tagesdurchschnitt der eingetragenen Stimmungswerte</p>${svg}<div class="moodcurve-summary">${summary}</div><p class="moodcurve-key">Jeder Punkt zeigt den Tagesdurchschnitt. Tage ohne Stimmungsangaben werden nicht verbunden.</p>`;
+ pages.appendChild(sheet);document.body.classList.add('moodcurve-print');
+ $('mood-print-now').onclick=()=>window.print();
+ $('mood-back').onclick=()=>{document.body.classList.remove('moodcurve-print');pages.innerHTML='';};
+}
+$('moodgo').onclick=()=>{
+ const from=$('moodfrom').value,to=$('moodto').value;
+ if(!from||!to){alert('Bitte beide Daten auswählen.');return;}
+ $('mooddialog').close();makeMoodCurve(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
+};
+
+// Siri-Kurzbefehl / URL-Übergabe (funktioniert, wenn die App über HTTPS bereitgestellt ist):
+// Beispiel: https://DEINE-APP-URL/?diktat=Dienstag%2010%20Uhr%20Einkaufen%20Stimmung%204
+try {
+ const params = new URLSearchParams(window.location.search);
+ const handoff = params.get('diktat') || params.get('entry') || params.get('text');
+ if (handoff) {
+   const isPdf = handlePdfHandoff(handoff);
+   if (!isPdf) {
+     $('voicedialog').showModal();
+     $('speechtext').value = handoff;
+     $('voicestatus').textContent = 'Sprachtext von Siri empfangen';
+     $('voicedetail').textContent = 'Bitte prüfe den Text und tippe auf „Einträge erkennen“.';
+   }
+   history.replaceState({}, '', window.location.pathname);
+ }
+} catch(e) {}
+</script>
+</body>
+</html>
