@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#20372b">
+<title>Mein Wochenplan</title>
+<style>
+:root{--ink:#202820;--muted:#647067;--line:#d8ded8;--paper:#fff;--bg:#f0f3ef;--green:#294b38}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header{background:#20372b;color:white;padding:22px 18px 20px}header .wrap,main{max-width:1500px;margin:auto}header h1{font-size:26px;margin:0 0 5px}header p{font-size:14px;margin:0;color:#d5e1d8}
+main{padding:14px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}.toolbar button,.toolbar label{border:1px solid var(--line);border-radius:9px;background:white;padding:10px 13px;font-size:14px;color:var(--ink);cursor:pointer}.weektitle{font-weight:bold;margin-right:auto;font-size:15px}.hint{color:var(--muted);font-size:12px;margin:0 0 10px;line-height:1.5}.gridwrap{overflow:auto;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px #20372b0a}.weekgrid{border-collapse:collapse;table-layout:fixed;width:100%;min-width:950px}.weekgrid th,.weekgrid td{border:1px solid var(--line);padding:0}.weekgrid thead th{background:#eaf0eb;padding:9px 4px;text-align:center;font-size:12px}.weekgrid thead th:first-child{width:58px}.weekgrid tbody th{background:#f5f7f4;width:58px;text-align:center;font-size:12px;color:#4d5b51;font-weight:600}.slot{height:52px;vertical-align:top}.cell{padding:3px;display:flex;flex-direction:column;gap:3px;min-height:51px}.activity{width:100%;min-width:0;border:1px solid transparent;border-radius:4px;background:transparent;font:12px Arial,sans-serif;color:var(--ink);padding:4px 3px;resize:vertical;min-height:25px;max-height:70px}.activity:focus{outline:1px solid #73957c;background:#fbfdfb;border-color:#9db4a2}.mood{width:100%;min-width:0;border:1px solid #e1e6e0;background:#f8faf7;border-radius:4px;padding:3px 1px;font-size:11px;color:var(--ink)}.toolbar .primary{background:var(--green);color:white;border-color:var(--green)}.toolbar .voice{background:#e8f0e9;border-color:#b9cbbb;color:#20372b;font-weight:bold}.status{font-size:12px;color:var(--muted);min-height:16px}.note{margin-top:12px;padding:12px 14px;background:white;border:1px solid var(--line);border-radius:10px}.note label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}.note textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px;font:13px Arial;min-height:60px;resize:vertical}.printtitle{display:none}
+dialog{width:min(600px,calc(100% - 24px));border:0;border-radius:16px;padding:0;box-shadow:0 16px 60px #0004;color:var(--ink)}dialog::backdrop{background:#15251dcc}.modalhead{padding:17px 19px;background:#20372b;color:white}.modalhead h2{margin:0;font-size:19px}.modalbody{padding:18px}.modalbody p{font-size:13px;line-height:1.5;color:var(--muted)}.modalbody label{display:block;font-size:13px;font-weight:bold;margin:12px 0 5px}.modalbody input,.modalbody textarea,.modalbody select{width:100%;font:15px Arial;padding:11px;border:1px solid var(--line);border-radius:8px;background:#fff}.modalbody textarea{min-height:90px}.modalactions{display:flex;gap:8px;justify-content:flex-end;padding:0 18px 18px}.modalactions button{border:1px solid var(--line);border-radius:9px;background:white;padding:11px 14px;font-size:14px}.modalactions .primary{background:var(--green);color:white;border-color:var(--green)}.voicebox{display:flex;align-items:center;gap:12px;background:#f0f4f0;border-radius:12px;padding:12px}.voicebox button{border:0;border-radius:50%;width:52px;height:52px;background:var(--green);color:white;font-size:24px;cursor:pointer;flex-shrink:0}.voicebox button.listening{background:#a43d37;animation:pulse 1.4s infinite}.voicebox div{font-size:13px;line-height:1.4}.small{font-size:12px!important}
+@keyframes pulse{50%{opacity:.65}}
+@media(max-width:650px){header{padding:18px 14px}header h1{font-size:23px}main{padding:10px}.weektitle{width:100%}.toolbar button{padding:9px 10px}.weekgrid{min-width:900px}}
+@media print{@page{size:A4 landscape;margin:8mm}body{background:white;color:#111;font-size:9px}header{background:white;color:#111;padding:0 0 8px}header h1{font-size:18px}header p{color:#333;font-size:9px}.toolbar,.hint,.status{display:none!important}main{padding:0;max-width:none}.gridwrap{overflow:visible;border:0;box-shadow:none;border-radius:0}.weekgrid{min-width:0;width:100%;border-collapse:collapse}.weekgrid thead th{background:#eee!important;print-color-adjust:exact;padding:4px 2px;font-size:9px}.weekgrid thead th:first-child,.weekgrid tbody th{width:36px}.weekgrid tbody th{font-size:8px}.slot{height:22px}.cell{padding:1px;min-height:21px;gap:0}.activity{font-size:8px;min-height:13px;max-height:none;padding:1px;border:0;resize:none;overflow:hidden}.mood{font-size:8px;padding:0;border:0;background:white}.note{margin-top:6px;padding:5px;border-radius:0}.note label{font-size:9px;margin-bottom:3px}.note textarea{min-height:30px;height:30px;font-size:9px;padding:3px;border:0}.printtitle{display:block;font-size:10px;margin-bottom:5px}dialog{display:none!important}}
+
+#rangepages{display:none}
+body.range-print>header,body.range-print>main{display:none!important}
+body.range-print #rangepages{display:block;padding:12px;background:white}
+.range-actions{display:flex;gap:8px;margin:0 0 12px}
+.range-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+
+@media print{
+  body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
+  body.range-print #rangepages{display:block!important}
+  .range-page{break-after:page;page-break-after:always;padding:0}
+  .range-page:last-child{break-after:auto;page-break-after:auto}
+  .range-page h2{font-size:15px;margin:0 0 5px}
+  .range-page .range-subtitle{font-size:9px;margin:0 0 6px}
+  .range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8px}
+  .range-table th,.range-table td{border:1px solid #999;padding:2px;vertical-align:top}
+  .range-table th{background:#eee!important;print-color-adjust:exact}
+  .range-table th:first-child{width:40px}
+  .range-table .r-hour{width:40px;text-align:center}
+  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .range-table .r-mood{font-size:7px;color:#333}
+  .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
+  @page{size:A4 landscape;margin:8mm}
+}
+#moodcurvepages{display:none}
+body.moodcurve-print>header,body.moodcurve-print>main,body.moodcurve-print>#rangepages{display:none!important}
+body.moodcurve-print #moodcurvepages{display:block;background:#fff;padding:12px}
+.moodcurve-actions{display:flex;gap:8px;margin:0 0 14px}
+.moodcurve-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.moodcurve-sheet{background:#fff;color:#202820;max-width:1100px;margin:0 auto;padding:8px}
+.moodcurve-sheet h2{font-size:22px;margin:0 0 5px}
+.moodcurve-subtitle{color:#647067;font-size:13px;margin:0 0 12px}
+.moodcurve-chart{width:100%;height:auto;display:block;max-height:65vh}
+.moodcurve-summary{font-size:14px;margin-top:12px;padding:12px;background:#f0f3ef;border-radius:8px}
+.moodcurve-key{font-size:12px;color:#647067;margin-top:8px}
+@media print{
+ body.moodcurve-print>header,body.moodcurve-print>main,body.moodcurve-print>#rangepages,body.moodcurve-print>#mooddialog,body.moodcurve-print>#rangedialog,body.moodcurve-print>#voicedialog{display:none!important}
+ body.moodcurve-print #moodcurvepages{display:block!important;padding:0}
+ body.moodcurve-print .moodcurve-actions{display:none!important}
+ body.moodcurve-print .moodcurve-sheet{max-width:none;padding:0;break-inside:avoid;page-break-inside:avoid}
+ body.moodcurve-print .moodcurve-chart{max-height:145mm;width:100%}
+ body.moodcurve-print .moodcurve-summary{background:#f3f3f3!important;print-color-adjust:exact;font-size:11px}
+ @page{size:A4 landscape;margin:10mm}
+}
+
+#moodreportpages{display:none}
+body.moodreport-print>header,body.moodreport-print>main,body.moodreport-print>#rangepages,body.moodreport-print>#moodcurvepages{display:none!important}
+body.moodreport-print #moodreportpages{display:block;background:#fff;padding:12px;color:#202820}
+.moodreport-actions{display:flex;gap:8px;margin:0 0 14px}
+.moodreport-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.moodreport-sheet{background:#fff;max-width:1100px;margin:0 auto;padding:8px}
+.report-mood-chart{width:100%;height:auto;display:block;max-height:420px;margin:8px 0 14px}
+.moodreport-sheet h2{font-size:22px;margin:0 0 5px}
+.report-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.report-card{border:1px solid #d8ded8;border-radius:8px;padding:12px;background:#f7f9f7}
+.report-card small{display:block;color:#647067;margin-bottom:5px}.report-card strong{font-size:22px}
+.report-section-title{font-size:16px;margin:18px 0 8px}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}.report-table th,.report-table td{border:1px solid #d8ded8;padding:7px;text-align:left}.report-table th{background:#edf1ed}
+.report-note{font-size:12px;color:#647067;margin-top:12px}
+@media(max-width:600px){.report-cards{grid-template-columns:1fr}.moodreport-sheet{padding:2px}.report-table{font-size:11px}.report-table th,.report-table td{padding:5px}}
+@media print{
+ body.moodreport-print>header,body.moodreport-print>main,body.moodreport-print>#rangepages,body.moodreport-print>#moodcurvepages,body.moodreport-print>#reportdialog,body.moodreport-print>#voicedialog,body.moodreport-print>#rangedialog,body.moodreport-print>#mooddialog{display:none!important}
+ body.moodreport-print #moodreportpages{display:block!important;padding:0}
+ body.moodreport-print .moodreport-actions{display:none!important}
+ body.moodreport-print .moodreport-sheet{max-width:none;padding:0}
+ body.moodreport-print .report-card{background:#f7f9f7!important;print-color-adjust:exact}
+ @page{size:A4 portrait;margin:12mm}
+}
+
+
+.mood-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:12px}.mood-calendar .dayhead{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}.mood-calendar button{min-width:0;border:1px solid #d8ded8;border-radius:7px;padding:8px 1px;background:#f7f9f7;font-size:12px;color:#202820}.mood-calendar button.empty{visibility:hidden}.mood-calendar button.low{background:#f5c7c3}.mood-calendar button.mid{background:#f8e7a6}.mood-calendar button.high{background:#cce8ce}.mood-calendar button.selected{outline:2px solid #20372b}.compare-result{margin-top:14px;padding:12px;background:#f0f3ef;border-radius:8px;font-size:14px;line-height:1.6}.summary-sheet{background:white;padding:16px;max-width:900px;margin:0 auto}.summary-sheet h2{margin:0 0 8px}.summary-sheet li{margin:7px 0}
+.summary-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0 auto 14px;max-width:900px}.summary-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.toolbar{align-items:center}.toolbar .navgroup{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.toolbar input[type=date]{border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px;font:14px Arial;color:var(--ink);max-width:155px}.moremenu{position:relative}.moremenu summary{list-style:none;border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 13px;cursor:pointer;font-size:14px}.moremenu summary::-webkit-details-marker{display:none}.moremenu[open] .menuitems{display:grid}.menuitems{display:none;position:absolute;z-index:20;right:0;top:calc(100% + 5px);min-width:220px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0002;gap:5px}.menuitems button{width:100%;text-align:left;white-space:normal}.search-results{max-height:45vh;overflow:auto}.search-result{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;margin:6px 0}.search-result small{display:block;color:var(--muted);margin-top:3px}
+@media(max-width:650px){.toolbar .navgroup{width:100%}.toolbar .navgroup button{flex:1}.moremenu{width:100%}.moremenu summary{text-align:center}.menuitems{position:static;min-width:0}.toolbar input[type=date]{flex:1;max-width:none}}
+body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages,body.summary-print>#moodcurvepages,body.summary-print>#moodreportpages{display:none!important}body.summary-print>#summarypages{display:block!important}body.summary-print .moodreport-actions{display:none!important}@media print{body.summary-print>header,body.summary-print>main{display:none!important}body.summary-print>#summarypages{display:block!important}body.summary-print .summary-sheet{padding:0;max-width:none}@page{size:A4 portrait;margin:12mm}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div></header>
+
+<section id="cloudpanel" style="max-width:900px;margin:14px auto;padding:14px;background:#fff;border:1px solid #d8ded8;border-radius:12px">
+  <h2 style="margin:0 0 8px;font-size:18px">Cloud-Sicherung – Test</h2>
+  <p style="font-size:13px;color:#647067;line-height:1.5">Melde dich mit deinem Supabase-Konto an. Erst „In Cloud sichern“ lädt die Daten dieses Browsers hoch. „Aus Cloud laden“ ersetzt die lokalen Daten erst nach deiner Bestätigung.</p>
+  <div id="cloudlogin" style="display:grid;gap:8px;max-width:500px">
+    <label for="cloudemail">E-Mail</label><input id="cloudemail" type="email" autocomplete="username" style="padding:10px;border:1px solid #d8ded8;border-radius:8px">
+    <label for="cloudpassword">Passwort</label><input id="cloudpassword" type="password" autocomplete="current-password" style="padding:10px;border:1px solid #d8ded8;border-radius:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="cloudsignin" class="primary">Anmelden</button><button id="cloudsignup">Konto erstellen</button><button id="cloudsignout" hidden>Abmelden</button></div>
+  </div>
+  <div id="cloudactions" hidden style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+    <button id="cloudupload" class="primary">In Cloud sichern</button><button id="clouddownload">Aus Cloud laden</button>
+  </div>
+  <p id="cloudstatus" role="status" style="font-size:13px;color:#647067;margin-bottom:0">Noch nicht angemeldet.</p>
+</section>
+
+<main>
+  <div class="toolbar">
+    <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
+    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
+    <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
+      <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button><button id="reminders">Erinnerungen</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><button id="backupmanage">Automatische Sicherungen</button>
+    </div></details><input type="file" id="importfile" accept="application/json" hidden>
+  </div>
+  <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
+  <div class="printtitle" id="printtitle"></div>
+  <div class="gridwrap"><table class="weekgrid" id="weekgrid"><thead><tr id="headrow"><th>Uhrzeit</th></tr></thead><tbody id="body"></tbody></table></div>
+  <section class="note"><label for="weeknote">Notizen zur Woche (optional)</label><textarea id="weeknote" placeholder="Freie Notizen oder Punkte, die du beim Gespräch ansprechen möchtest …"></textarea></section>
+  <p class="status" id="status" aria-live="polite">Änderungen werden lokal gespeichert.</p>
+  <section id="missingbanner" class="note" hidden></section>
+</main>
+
+<dialog id="calendardialog">
+ <div class="modalhead"><h2>Stimmungskalender</h2></div>
+ <div class="modalbody"><div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><button id="calprev">← Monat</button><strong id="calmonth"></strong><button id="calnext">Monat →</button></div><div id="moodcalendargrid" class="mood-calendar"></div><p class="small">Farben: rot = niedrig, gelb = mittel, grün = hoch. Tippe einen Tag an, um die Einträge zu sehen.</p><div id="caldetails"></div></div>
+ <div class="modalactions"><button id="calclose">Schließen</button></div>
+</dialog>
+<dialog id="comparedialog">
+ <div class="modalhead"><h2>Zeiträume vergleichen</h2></div>
+ <div class="modalbody"><p>Vergleiche die Stimmung zweier beliebiger Zeiträume.</p>
+ <label for="comparefrom1">Zeitraum 1 – von</label><input id="comparefrom1" type="date"><label for="compareto1">Zeitraum 1 – bis</label><input id="compareto1" type="date">
+ <label for="comparefrom2">Zeitraum 2 – von</label><input id="comparefrom2" type="date"><label for="compareto2">Zeitraum 2 – bis</label><input id="compareto2" type="date"><div id="compareout"></div></div>
+ <div class="modalactions"><button id="compareclose">Schließen</button><button class="primary" id="comparego">Vergleichen</button></div>
+</dialog>
+<dialog id="reminderdialog">
+ <div class="modalhead"><h2>Erinnerungen</h2></div>
+ <div class="modalbody"><p>Die App kann beim Öffnen fehlende Einträge anzeigen. Eine Benachrichtigung ist nur möglich, wenn der Browser sie unterstützt, du zustimmst und die App geöffnet ist. Eine zuverlässige Hintergrund-Erinnerung kann eine normale Webseite nicht garantieren.</p>
+ <label for="remindertime">Erinnerungszeit (wenn die App geöffnet ist)</label><input id="remindertime" type="time" value="20:00"><label><input id="reminderenabled" type="checkbox" style="width:auto"> Tägliche Erinnerung aktivieren</label><p id="reminderstatus" class="small"></p></div>
+ <div class="modalactions"><button id="remindercancel">Schließen</button><button class="primary" id="remindersave">Einstellungen speichern</button></div>
+</dialog>
+<dialog id="searchdialog"><div class="modalhead"><h2>Wochenplan durchsuchen</h2></div><div class="modalbody"><p>Suche in gespeicherten Aktivitäten und Notizen.</p><label for="searchquery">Suchbegriff</label><input id="searchquery" type="search" placeholder="z. B. Arzt, Streit, Spaziergang"><div id="searchresults" class="search-results" aria-live="polite"></div></div><div class="modalactions"><button id="searchclose">Schließen</button></div></dialog>
+<div id="summarypages" hidden></div>
+<dialog id="backupdialog">
+ <div class="modalhead"><h2>Datensicherung</h2></div>
+ <div class="modalbody">
+  <p>Die App legt im Browser automatisch ältere Sicherungsstände an, wenn sich Daten ändern. Das schützt vor versehentlichem Überschreiben, aber nicht zuverlässig vor dem Löschen der Browserdaten oder einem Geräteverlust. Dafür bitte zusätzlich regelmäßig „Export sichern“ verwenden und die Datei z. B. in Dateien/iCloud Drive speichern.</p>
+  <label for="backupselect">Sicherungsstand auswählen</label><select id="backupselect"></select>
+  <p id="backupinfo" class="small"></p>
+ </div>
+ <div class="modalactions"><button id="backupclose">Schließen</button><button id="backuprefresh">Aktualisieren</button><button class="primary" id="backuprestore">Sicherung wiederherstellen</button></div>
+</dialog>
+
+<dialog id="rangedialog">
+  <div class="modalhead"><h2>PDF für Zeitraum erstellen</h2></div>
+  <div class="modalbody">
+    <p>Wähle den gewünschten Zeitraum. Jede betroffene Kalenderwoche wird auf einer eigenen A4-Seite im Querformat ausgegeben.</p>
+    <label for="rangefrom">Von</label><input id="rangefrom" type="date">
+    <label for="rangeto">Bis</label><input id="rangeto" type="date">
+  </div>
+  <div class="modalactions"><button id="rangecancel">Abbrechen</button><button class="primary" id="rangego">PDF vorbereiten</button></div>
+</dialog>
+<div id="rangepages"></div>
+<dialog id="mooddialog">
+  <div class="modalhead"><h2>Stimmungskurve erstellen</h2></div>
+  <div class="modalbody">
+    <p>Wähle den Zeitraum. Für jeden Tag wird der Durchschnitt aller eingetragenen Stimmungswerte (1 bis 10) berechnet. Tage ohne Einträge bleiben als Lücke sichtbar.</p>
+    <label for="moodfrom">Von</label><input id="moodfrom" type="date">
+    <label for="moodto">Bis</label><input id="moodto" type="date">
+  </div>
+  <div class="modalactions"><button id="moodcancel">Abbrechen</button><button class="primary" id="moodgo">Kurve anzeigen</button></div>
+</dialog>
+<div id="moodcurvepages"></div>
+<dialog id="reportdialog">
+  <div class="modalhead"><h2>Stimmungsauswertung</h2></div>
+  <div class="modalbody">
+    <p>Wähle den Zeitraum für die Auswertung. Es werden nur tatsächlich gespeicherte Stimmungswerte berücksichtigt.</p>
+    <label for="reportfrom">Von</label><input id="reportfrom" type="date">
+    <label for="reportto">Bis</label><input id="reportto" type="date">
+  </div>
+  <div class="modalactions"><button id="reportcancel">Abbrechen</button><button class="primary" id="reportgo">Auswertung anzeigen</button></div>
+</dialog>
+<div id="moodreportpages"></div>
+<dialog id="voicedialog">
+  <div class="modalhead"><h2>Einträge diktieren</h2></div>
+  <div class="modalbody">
+    <p>Sprich einen oder mehrere Einträge. Nenne möglichst Tag, Uhrzeit, Aktivität und Stimmung von 1 bis 10. Die erkannten Angaben werden nicht automatisch gespeichert, sondern zuerst zur Kontrolle angezeigt.</p>
+    <div class="voicebox"><button id="startvoice" aria-label="Diktat starten">🎙</button><div><strong id="voicestatus">Bereit zum Diktieren</strong><br><span id="voicedetail">Tippe auf das Mikrofon, um zu beginnen.</span></div></div>
+    <label for="speechtext">Erkannter Text (auch manuell editierbar)</label><textarea id="speechtext" placeholder="Zum Beispiel: Dienstag 10 Uhr Einkaufen Stimmung 4. Dienstag 14 Uhr Streit Stimmung 2."></textarea>
+    <p class="small">Hinweis: Die Web-Spracherkennung wird nicht von jedem iPhone-Browser unterstützt. Falls das Mikrofon nicht funktioniert, nutze das Mikrofon der iPhone-Tastatur in diesem Textfeld und tippe anschließend auf „Einträge erkennen“.</p>
+    <div id="parsedarea" hidden>
+      <label>Erkannte Einträge – bitte prüfen</label>
+      <div id="parsedlist"></div>
+    </div>
+  </div>
+  <div class="modalactions"><button id="closevoice">Abbrechen</button><button id="parsevoice">Einträge erkennen</button><button class="primary" id="savevoice" hidden>Geprüfte Einträge übernehmen</button></div>
+</dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const $=id=>document.getElementById(id);
+let anchor=new Date();anchor.setHours(12,0,0,0);anchor.setDate(anchor.getDate()-(anchor.getDay()===0?6:anchor.getDay()-1));
+let all=readStore(), recognition=null, parsed=[];
+function readStore(){try{return JSON.parse(localStorage.getItem('meinWochenplanV2')||'{}')}catch(e){return {}}}
+function key(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function current(){if(!all[key(anchor)])all[key(anchor)]={cells:{},note:''};return all[key(anchor)]}
+function fmt(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function weekRange(){let e=new Date(anchor);e.setDate(e.getDate()+6);return `${fmt(anchor)} – ${fmt(e)}`}
+const BACKUP_KEY='meinWochenplanV2_autoBackups';
+function backupHistory(){try{const x=JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
+function saveBackupSnapshot(raw,reason='Automatische Sicherung'){
+ if(!raw)return false;try{const parsed=JSON.parse(raw);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return false;
+  const list=backupHistory();const stamp=Date.now();if(list.length&&list[0].data===raw)return false;
+  list.unshift({time:stamp,reason,data:raw});localStorage.setItem(BACKUP_KEY,JSON.stringify(list.slice(0,20)));localStorage.setItem('meinWochenplanV2_lastBackup',String(stamp));return true;
+ }catch(e){return false}
+}
+function persist(message='Gespeichert'){
+ const previous=localStorage.getItem('meinWochenplanV2'),next=JSON.stringify(all),last=Number(localStorage.getItem('meinWochenplanV2_lastBackup')||0);
+ // Keep a restore point at most every 10 minutes, and before a destructive replacement.
+ if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
+ localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';
+}
+function render(){
+ $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
+ const h=$('headrow');h.innerHTML='<th>Uhrzeit</th>';
+ DAYS.forEach((day,i)=>{let d=new Date(anchor);d.setDate(d.getDate()+i);let th=document.createElement('th');th.textContent=day+' '+fmt(d).slice(0,5);h.appendChild(th)});
+ const body=$('body');body.innerHTML='';
+ for(let hour=5;hour<=23;hour++){
+  const tr=document.createElement('tr');const th=document.createElement('th');th.textContent=String(hour).padStart(2,'0')+':00';tr.appendChild(th);
+  DAYS.forEach((day,i)=>{const d=new Date(anchor);d.setDate(d.getDate()+i);const id=key(d)+'_'+hour;const data=current().cells[id]||{activity:'',mood:''};const td=document.createElement('td');td.className='slot';const cell=document.createElement('div');cell.className='cell';
+   const activity=document.createElement('textarea');activity.className='activity';activity.rows=1;activity.placeholder='Aktivität …';activity.setAttribute('aria-label',day+', '+hour+' Uhr, Aktivität');activity.value=data.activity||'';
+   const mood=document.createElement('select');mood.className='mood';mood.setAttribute('aria-label',day+', '+hour+' Uhr, Stimmung');mood.innerHTML='<option value="">Stimmung –</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=data.mood||'';
+   activity.addEventListener('input',()=>{current().cells[id]={activity:activity.value,mood:mood.value};persist()});
+   mood.addEventListener('change',()=>{current().cells[id]={activity:activity.value,mood:mood.value};persist()});
+   cell.append(activity,mood);td.appendChild(cell);tr.appendChild(td);
+  });body.appendChild(tr);
+ }
+ $('weeknote').value=current().note||'';
+}
+$('weeknote').addEventListener('input',()=>{current().note=$('weeknote').value;persist()});
+$('prev').onclick=()=>{anchor.setDate(anchor.getDate()-7);render()};
+$('next').onclick=()=>{anchor.setDate(anchor.getDate()+7);render()};
+$('print').onclick=()=>window.print();
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$('importbtn').onclick=()=>$('importfile').click();
+$('importfile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error();if(confirm('Import ersetzt alle derzeit gespeicherten Wochenpläne. Der aktuelle Stand wird vorher gesichert. Fortfahren?')){const previous=localStorage.getItem('meinWochenplanV2');if(previous)saveBackupSnapshot(previous,'Sicherung vor Import');all=obj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();persist('Import abgeschlossen')}}catch(err){alert('Diese Datei ist kein gültiger Wochenplan-Export.')}e.target.value=''};
+$('voiceopen').onclick=()=>{$('voicedialog').showModal();$('speechtext').value='';$('parsedarea').hidden=true;$('savevoice').hidden=true;parsed=[];$('voicestatus').textContent='Bereit zum Diktieren';$('voicedetail').textContent='Tippe auf das Mikrofon, um zu beginnen.'};
+$('closevoice').onclick=()=>{if(recognition)try{recognition.stop()}catch{};$('voicedialog').close()};
+$('startvoice').onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$('voicestatus').textContent='Spracherkennung nicht verfügbar';$('voicedetail').textContent='Nutze bitte das Mikrofon deiner iPhone-Tastatur im Textfeld unten.';$('speechtext').focus();return}
+ try{
+  recognition=new SR();recognition.lang='de-DE';recognition.continuous=true;recognition.interimResults=true;
+  $('startvoice').classList.add('listening');$('voicestatus').textContent='Ich höre zu …';$('voicedetail').textContent='Sprich deine Einträge. Tippe erneut auf das Mikrofon, um zu stoppen.';
+  recognition.onresult=event=>{let finalText='';let interim='';for(let i=0;i<event.results.length;i++){if(event.results[i].isFinal)finalText+=event.results[i][0].transcript+' ';else interim+=event.results[i][0].transcript}if(finalText)$('speechtext').value=($('speechtext').value+' '+finalText).trim();$('voicedetail').textContent=interim||'Sprache erkannt. Du kannst weiter diktieren.'};
+  recognition.onerror=event=>{$('voicestatus').textContent='Mikrofonproblem: '+event.error;$('voicedetail').textContent='Prüfe die Mikrofonberechtigung oder nutze die iPhone-Tastatur.';$('startvoice').classList.remove('listening')};
+  recognition.onend=()=>{$('startvoice').classList.remove('listening');$('voicestatus').textContent='Diktat beendet';$('voicedetail').textContent='Prüfe den Text und tippe auf „Einträge erkennen“.';
+  };
+  if($('startvoice').dataset.active==='1'){recognition.stop();$('startvoice').dataset.active='0';$('startvoice').classList.remove('listening')}else{$('startvoice').dataset.active='1';recognition.start()}
+  recognition.onend=()=>{$('startvoice').dataset.active='0';$('startvoice').classList.remove('listening');$('voicestatus').textContent='Diktat beendet';$('voicedetail').textContent='Prüfe den Text und tippe auf „Einträge erkennen“.'};
+ }catch(e){$('voicestatus').textContent='Diktat konnte nicht starten';$('voicedetail').textContent='Nutze das Mikrofon deiner Tastatur oder prüfe die Berechtigungen.';$('startvoice').classList.remove('listening')}
+};
+function norm(s){return s.toLocaleLowerCase('de-DE').replace(/[.,;!?]/g,' ').replace(/\s+/g,' ').trim()}
+function parseSpeech(text){
+ const dayWords=[['montag',0],['dienstag',1],['mittwoch',2],['donnerstag',3],['freitag',4],['samstag',5],['sonntag',6]];
+ const wordNums={zehn:10,eins:1,ein:1,zwei:2,drei:3,vier:4,fünf:5,fuenf:5,sechs:6,sieben:7,acht:8,neun:9};
+ // Split on explicit time expressions, so several entries can be dictated in one go.
+ const timeRe=/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*uhr\b/ig;
+ const matches=[...text.matchAll(timeRe)];
+ if(!matches.length)return parseSpeechFallback(text,dayWords,wordNums);
+ const chunks=[];
+ for(let i=0;i<matches.length;i++){
+   const m=matches[i],from=m.index,to=i+1<matches.length?matches[i+1].index:text.length;
+   const prefix=i===0?text.slice(0,from):'';
+   chunks.push({raw:(prefix+' '+text.slice(from,to)).trim(),time:Number(m[1])});
+ }
+ let inheritedDay=null;const out=[];
+ for(const chunk of chunks){
+   const s=chunk.raw.toLocaleLowerCase('de-DE');let dayIndex=-1;
+   for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b','i').test(s)){dayIndex=idx;inheritedDay=idx;break}}
+   if(dayIndex<0)dayIndex=inheritedDay;
+   const hour=chunk.time;if(hour<5||hour>23)continue;
+   const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+   let mood=null;
+   const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/i);
+   if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+   else {const nums=[...s.matchAll(/\b(10|[1-9])\b/g)].map(m=>Number(m[1]));if(nums.length>1)mood=nums[nums.length-1]}
+   if(mood!==null&&(mood<1||mood>10))mood=null;
+   let activity=chunk.raw;
+   activity=activity.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'');
+   activity=activity.replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*uhr\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,;:.!?-]+|[\s,;:.!?-]+$/g,'').trim();
+   if(!activity)activity='Aktivität bitte ergänzen';
+   out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
+ }
+ return out;
+}
+function parseSpeechFallback(text,dayWords,wordNums){
+ const sentences=text.replace(/\n/g,'. ').split(/[.;!?]+/).map(s=>s.trim()).filter(Boolean),out=[];let inheritedDay=null;
+ for(const sentence of sentences){
+  const s=sentence.toLocaleLowerCase('de-DE');let dayIndex=-1;
+  for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b').test(s)){dayIndex=idx;inheritedDay=idx;break}}
+  if(dayIndex<0)dayIndex=inheritedDay;
+  const timeMatch=s.match(/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(?:uhr)?\b/);
+  if(!timeMatch)continue;const hour=Number(timeMatch[1]);if(hour<5||hour>23)continue;
+  const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+  let mood=null;const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/);
+  if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+  let activity=sentence.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'').replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*(?:uhr)?\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,:-]+|[\s,:-]+$/g,'').trim();
+  if(!activity)activity='Aktivität bitte ergänzen';
+  out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
+ }
+ return out;
+}
+$('parsevoice').onclick=()=>{
+ parsed=parseSpeech($('speechtext').value);
+ if(!parsed.length){$('parsedarea').hidden=false;$('parsedlist').textContent='Ich konnte keine eindeutigen Uhrzeiten zwischen 05:00 und 23:00 Uhr erkennen. Bitte schreibe beispielsweise: „Dienstag, 10 Uhr, Einkaufen, Stimmung 4.“';$('savevoice').hidden=true;return}
+ $('parsedarea').hidden=false;$('parsedlist').innerHTML='';
+ parsed.forEach((p,i)=>{
+  const box=document.createElement('div');box.style.cssText='border:1px solid #d8ded8;border-radius:9px;padding:10px;margin:7px 0';
+  box.innerHTML=`<label>Tag und Uhrzeit</label><div style="display:flex;gap:7px"><select data-k="day" style="flex:2;padding:8px;border:1px solid #d8ded8;border-radius:7px">${DAYS.map((d,n)=>`<option value="${n}" ${d===p.day?'selected':''}>${d}</option>`).join('')}</select><select data-k="hour" style="flex:1;padding:8px;border:1px solid #d8ded8;border-radius:7px">${Array.from({length:19},(_,n)=>n+5).map(h=>`<option value="${h}" ${h===p.hour?'selected':''}>${String(h).padStart(2,'0')}:00</option>`).join('')}</select></div><label>Aktivität</label><input data-k="activity" value=""><label>Stimmung (1 = schlecht, 10 = gut)</label><select data-k="mood"><option value="">Nicht angegeben</option>${Array.from({length:10},(_,n)=>n+1).map(n=>`<option value="${n}" ${String(n)===String(p.mood)?'selected':''}>${n}</option>`).join('')}</select>`;
+  box.querySelector('[data-k="activity"]').value=p.activity;
+  box.dataset.index=i;$('parsedlist').appendChild(box);
+ });$('savevoice').hidden=false;
+};
+$('savevoice').onclick=()=>{
+ const boxes=[...$('parsedlist').children];let count=0;
+ boxes.forEach(box=>{const val=k=>box.querySelector(`[data-k="${k}"]`).value;const di=Number(val('day'));const date=new Date(anchor);date.setDate(date.getDate()+di);const hour=Number(val('hour'));const id=key(date)+'_'+hour;const targetMonday=new Date(date);targetMonday.setDate(targetMonday.getDate()-(targetMonday.getDay()===0?6:targetMonday.getDay()-1));const weekKey=key(targetMonday);if(!all[weekKey])all[weekKey]={cells:{},note:''};all[weekKey].cells[id]={activity:val('activity').trim(),mood:val('mood')};count++});
+ persist(`${count} Einträge übernommen`);render();$('voicedialog').close();
+};
+
+function escapeHtml(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function parseGermanDate(s){
+ const m=String(s).match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+ if(!m)return null;
+ const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),12,0,0,0);
+ return d.getFullYear()===Number(m[3])&&d.getMonth()===Number(m[2])-1&&d.getDate()===Number(m[1])?d:null;
+}
+function mondayOf(date){
+ const d=new Date(date);d.setHours(12,0,0,0);
+ d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;
+}
+function printDateRange(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
+  alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
+ }
+ const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ let monday=mondayOf(start);
+ while(monday<=end){
+  const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
+  const week=all[key(monday)]||{cells:{},note:''};
+  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
+  const dates=[];
+  for(let i=0;i<7;i++){
+   const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
+   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+   table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
+  }
+  table+='</tr></thead><tbody>';
+  for(let hour=5;hour<=23;hour++){
+   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
+   for(const d of dates){
+    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+    const data=week.cells?.[key(d)+'_'+hour]||{};
+    const activity=inRange?(data.activity||''):'';
+    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
+    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
+   }
+   table+='</tr>';
+  }
+  table+='</tbody></table>';
+  const section=document.createElement('section');section.className='range-page';
+  const note=(week.note||'').trim();
+  section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
+  pages.appendChild(section);
+  monday.setDate(monday.getDate()+7);
+ }
+ document.body.classList.add('range-print');
+ $('range-print-now').onclick=()=>window.print();
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
+ try{window.print()}catch(e){}
+}
+function openRangeDialog(fromDate=null,toDate=null){
+ const start=fromDate instanceof Date && !isNaN(fromDate) ? fromDate : anchor;
+ const end=toDate instanceof Date && !isNaN(toDate) ? toDate : new Date(start);
+ if(!(toDate instanceof Date) || isNaN(toDate)) end.setDate(end.getDate()+6);
+ $('rangefrom').value=key(start);
+ $('rangeto').value=key(end);
+ $('rangedialog').showModal();
+}
+$('rangeprint').onclick=openRangeDialog;
+// Best-effort handoff to Safari on iOS. Custom URL scheme support can vary by iOS version.
+$('opensafari').onclick=()=>{
+ const normalUrl='https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ const safariUrl='x-safari-https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ try { window.location.href=safariUrl; } catch(e) {}
+ setTimeout(()=>{
+   alert('Falls Safari nicht geöffnet wurde: Kopiere diese Adresse und füge sie in Safari ein: '+normalUrl);
+ },900);
+};
+$('rangecancel').onclick=()=>$('rangedialog').close();
+$('rangego').onclick=()=>{
+ const from=$('rangefrom').value,to=$('rangeto').value;
+ if(!from||!to){alert('Bitte beide Daten auswählen.');return}
+ $('rangedialog').close();
+ printDateRange(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
+};
+function extractPdfDates(text){
+ const t=String(text||'').toLocaleLowerCase('de-DE');
+ const monthMap={januar:1,jan:1,februar:2,feb:2,maerz:3,märz:3,mar:3,april:4,apr:4,mai:5,juni:6,jun:6,juli:7,jul:7,august:8,aug:8,september:9,sep:9,oktober:10,okt:10,november:11,nov:11,dezember:12,dez:12};
+ const found=[];
+ // Numeric German dates, ISO dates, and spoken-style dates such as "1. Oktober 2026".
+ const re=/(\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\b|\b\d{1,2}\.?\s*(?:januar|jan|februar|feb|maerz|märz|mar|april|apr|mai|juni|jun|juli|jul|august|aug|september|sep|oktober|okt|november|nov|dezember|dez)\s+\d{4}\b)/ig;
+ for(const m of t.matchAll(re)){
+  const raw=m[0].trim();let d=null;
+  if(/^\d{4}-/.test(raw)){const [y,mo,da]=raw.split('-').map(Number);d=new Date(y,mo-1,da,12);if(d.getFullYear()!==y||d.getMonth()!==mo-1||d.getDate()!==da)d=null;}
+  else if(/\d{1,2}\.\s*\d{1,2}\./.test(raw)){d=parseGermanDate(raw.replace(/\s+/g,''));}
+  else {const x=raw.match(/^(\d{1,2})\.?\s*([a-zä]+)\s+(\d{4})$/i);if(x){const mo=monthMap[x[2]];if(mo){d=new Date(Number(x[3]),mo-1,Number(x[1]),12);if(d.getFullYear()!==Number(x[3])||d.getMonth()!==mo-1||d.getDate()!==Number(x[1]))d=null;}}}
+  if(d)found.push(d);
+ }
+ return found;
+}
+function handlePdfHandoff(text){
+ const t=String(text||'').trim();
+ if(!/(pdf|drucken|drucke|ausdruck)/i.test(t))return false;
+ const dates=extractPdfDates(t);
+ // Always open the date dialog in the browser. Populate it with the spoken dates
+ // when both dates were recognized, instead of trying to print immediately.
+ if(dates.length>=2){
+  if(dates[0]<=dates[1])openRangeDialog(dates[0],dates[1]);
+  else {openRangeDialog();$('status').textContent='Das Enddatum liegt vor dem Startdatum. Bitte prüfe die Datumsfelder.';}
+ }else{
+  openRangeDialog();
+  $('status').textContent='PDF-Befehl erkannt, aber beide Daten konnten nicht sicher erkannt werden. Bitte trage sie im Dialog ein.';
+ }
+ return true;
+}
+render();
+
+// Stimmungskurve für einen frei gewählten Zeitraum
+function openMoodDialog(){
+ const start=new Date(anchor);start.setHours(12,0,0,0);
+ const end=new Date(start);end.setDate(end.getDate()+6);
+ $('moodfrom').value=key(start);$('moodto').value=key(end);$('mooddialog').showModal();
+}
+$('moodcurve').onclick=openMoodDialog;
+$('moodcancel').onclick=()=>$('mooddialog').close();
+function dailyMood(date){
+ const monday=mondayOf(date),week=all[key(monday)];
+ if(!week||!week.cells)return {average:null,count:0};
+ const values=[];
+ for(let hour=5;hour<=23;hour++){
+  const v=Number(week.cells[key(date)+'_'+hour]?.mood);
+  if(Number.isFinite(v)&&v>=1&&v<=10)values.push(v);
+ }
+ return {average:values.length?values.reduce((a,b)=>a+b,0)/values.length:null,count:values.length};
+}
+function makeMoodCurve(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;}
+ const days=[];let d=new Date(start);d.setHours(12,0,0,0);const last=new Date(end);last.setHours(12,0,0,0);
+ while(d<=last){const v=dailyMood(d);days.push({date:new Date(d),...v});d.setDate(d.getDate()+1);}
+ const total=days.reduce((sum,x)=>sum+x.count,0),allValues=days.filter(x=>x.average!==null);
+ const overall=total?days.reduce((sum,x)=>sum+(x.average===null?0:x.average*x.count),0)/total:null;
+ const W=1100,H=500,L=68,R=28,T=35,B=72,plotW=W-L-R,plotH=H-T-B;
+ const x=i=>days.length<=1?L+plotW/2:L+i*plotW/(days.length-1);
+ const y=v=>T+(10-v)*plotH/9;
+ let svg=`<svg class="moodcurve-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Stimmungskurve mit täglichen Durchschnittswerten von 1 bis 10">`;
+ for(let v=1;v<=10;v++){
+  const yy=y(v);svg+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#d8ded8" stroke-width="1"/>`;
+  svg+=`<text x="${L-16}" y="${yy+5}" text-anchor="end" font-size="15" fill="#354238">${v}</text>`;
+ }
+ svg+=`<line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#667168"/><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#667168"/>`;
+ // Draw line segments only between adjacent days with values; missing days remain visible as gaps.
+ for(let i=0;i<days.length-1;i++){
+  if(days[i].average!==null&&days[i+1].average!==null){svg+=`<line x1="${x(i)}" y1="${y(days[i].average)}" x2="${x(i+1)}" y2="${y(days[i+1].average)}" stroke="#294b38" stroke-width="3" stroke-linecap="round"/>`;}
+ }
+ days.forEach((day,i)=>{
+  if(day.average!==null){svg+=`<circle cx="${x(i)}" cy="${y(day.average)}" r="5" fill="#294b38" stroke="#fff" stroke-width="2"><title>${fmt(day.date)}: ${day.average.toLocaleString('de-DE',{maximumFractionDigits:1})} aus ${day.count} Eintrag/Einträgen</title></circle>`;}
+  const stride=Math.max(1,Math.ceil(days.length/12));
+  if(i%stride===0||i===days.length-1){const label=day.date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});svg+=`<text x="${x(i)}" y="${H-B+25}" text-anchor="middle" font-size="13" fill="#354238">${label}</text>`;}
+ });
+ svg+=`<text x="${L}" y="20" font-size="14" fill="#354238">Stimmung (1 = schlecht, 10 = gut)</text></svg>`;
+ const pages=$('moodcurvepages');pages.innerHTML='<div class="moodcurve-actions"><button type="button" id="mood-print-now">Drucken / als PDF</button><button type="button" id="mood-back">Zurück zum Wochenplan</button></div>';
+ const sheet=document.createElement('section');sheet.className='moodcurve-sheet';
+ const summary=overall===null?'Für diesen Zeitraum sind noch keine Stimmungswerte eingetragen.':`Durchschnitt im Zeitraum: <strong>${overall.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})} / 10</strong> · ${total} Stimmungswert(e) an ${allValues.length} Tag(en) erfasst.`;
+ sheet.innerHTML=`<h2>Stimmungskurve</h2><p class="moodcurve-subtitle">${fmt(start)} bis ${fmt(end)} · Tagesdurchschnitt der eingetragenen Stimmungswerte</p>${svg}<div class="moodcurve-summary">${summary}</div><p class="moodcurve-key">Jeder Punkt zeigt den Tagesdurchschnitt. Tage ohne Stimmungsangaben werden nicht verbunden.</p>`;
+ pages.appendChild(sheet);document.body.classList.add('moodcurve-print');
+ $('mood-print-now').onclick=()=>window.print();
+ $('mood-back').onclick=()=>{document.body.classList.remove('moodcurve-print');pages.innerHTML='';};
+}
+$('moodgo').onclick=()=>{
+ const from=$('moodfrom').value,to=$('moodto').value;
+ if(!from||!to){alert('Bitte beide Daten auswählen.');return;}
+ $('mooddialog').close();makeMoodCurve(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
+};
+
+
+// Separate in-app mood analysis, using the same localStorage data as the weekly planner.
+function openReportDialog(){
+ const start=new Date(anchor);start.setHours(12,0,0,0);const end=new Date(start);end.setDate(end.getDate()+6);
+ $('reportfrom').value=key(start);$('reportto').value=key(end);$('reportdialog').showModal();
+}
+$('moodreport').onclick=openReportDialog;
+$('reportcancel').onclick=()=>$('reportdialog').close();
+function makeMoodReport(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;}
+ const days=[];let d=new Date(start);d.setHours(12,0,0,0);const last=new Date(end);last.setHours(12,0,0,0);
+ while(d<=last){const v=dailyMood(d);days.push({date:new Date(d),...v});d.setDate(d.getDate()+1);}
+ const observed=days.filter(x=>x.average!==null);const count=observed.reduce((n,x)=>n+x.count,0);
+ const overall=count?observed.reduce((n,x)=>n+x.average*x.count,0)/count:null;
+ const best=observed.length?observed.reduce((a,b)=>b.average>a.average?b:a):null;
+ const worst=observed.length?observed.reduce((a,b)=>b.average<a.average?b:a):null;
+ const weeks=new Map();
+ for(const day of observed){const mon=mondayOf(day.date),k=key(mon);if(!weeks.has(k))weeks.set(k,{monday:mon,sum:0,count:0,days:0});const w=weeks.get(k);w.sum+=day.average*day.count;w.count+=day.count;w.days++;}
+ const weekRows=[...weeks.values()].sort((a,b)=>a.monday-b.monday);
+ const fmtAvg=n=>n===null?'–':n.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1});
+ const cards=`<div class="report-cards"><div class="report-card"><small>Durchschnitt im Zeitraum</small><strong>${fmtAvg(overall)} / 10</strong></div><div class="report-card"><small>Stimmungswerte erfasst</small><strong>${count}</strong></div><div class="report-card"><small>Tage mit Einträgen</small><strong>${observed.length}</strong></div></div>`;
+ // Daily-average chart included in the report and in its print/PDF view.
+ const chartW=1000,chartH=340,chartL=58,chartR=24,chartT=28,chartB=58,chartPW=chartW-chartL-chartR,chartPH=chartH-chartT-chartB;
+ const chartX=i=>days.length<=1?chartL+chartPW/2:chartL+i*chartPW/(days.length-1);
+ const chartY=v=>chartT+(10-v)*chartPH/9;
+ let chart=`<svg class="report-mood-chart" viewBox="0 0 ${chartW} ${chartH}" role="img" aria-label="Stimmungskurve mit Tagesdurchschnitt von 1 bis 10">`;
+ for(let v=1;v<=10;v++){const yy=chartY(v);chart+=`<line x1="${chartL}" y1="${yy}" x2="${chartW-chartR}" y2="${yy}" stroke="#d8ded8" stroke-width="1"/><text x="${chartL-13}" y="${yy+5}" text-anchor="end" font-size="14" fill="#354238">${v}</text>`;}
+ chart+=`<line x1="${chartL}" y1="${chartT}" x2="${chartL}" y2="${chartH-chartB}" stroke="#667168"/><line x1="${chartL}" y1="${chartH-chartB}" x2="${chartW-chartR}" y2="${chartH-chartB}" stroke="#667168"/>`;
+ for(let i=0;i<days.length-1;i++){if(days[i].average!==null&&days[i+1].average!==null)chart+=`<line x1="${chartX(i)}" y1="${chartY(days[i].average)}" x2="${chartX(i+1)}" y2="${chartY(days[i+1].average)}" stroke="#294b38" stroke-width="3" stroke-linecap="round"/>`;}
+ const chartStride=Math.max(1,Math.ceil(days.length/12));days.forEach((day,i)=>{if(day.average!==null)chart+=`<circle cx="${chartX(i)}" cy="${chartY(day.average)}" r="5" fill="#294b38" stroke="#fff" stroke-width="2"><title>${fmt(day.date)}: ${fmtAvg(day.average)} / 10 (${day.count} Werte)</title></circle>`;if(i%chartStride===0||i===days.length-1)chart+=`<text x="${chartX(i)}" y="${chartH-chartB+23}" text-anchor="middle" font-size="13" fill="#354238">${day.date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}</text>`;});
+ chart+='</svg>';
+ const chartSection=`<h3 class="report-section-title">Stimmung im Zeitverlauf</h3><p class="report-note">Jeder Punkt zeigt den Tagesdurchschnitt. Tage ohne Werte bleiben als Lücken sichtbar.</p>${chart}`;
+ const extrema=`<h3 class="report-section-title">Beste und schwierigste Tage</h3><table class="report-table"><thead><tr><th>Auswertung</th><th>Tag</th><th>Tagesdurchschnitt</th><th>Werte</th></tr></thead><tbody>${best?`<tr><td>Höchster Wert</td><td>${fmt(best.date)}</td><td>${fmtAvg(best.average)} / 10</td><td>${best.count}</td></tr>`:'<tr><td colspan="4">Noch keine Stimmungswerte im Zeitraum.</td>'}${worst?`<tr><td>Niedrigster Wert</td><td>${fmt(worst.date)}</td><td>${fmtAvg(worst.average)} / 10</td><td>${worst.count}</td></tr>`:''}</tbody></table>`;
+ const rows=weekRows.map(w=>`<tr><td>${fmt(w.monday)} – ${fmt(new Date(w.monday.getFullYear(),w.monday.getMonth(),w.monday.getDate()+6,12))}</td><td>${fmtAvg(w.sum/w.count)} / 10</td><td>${w.days}</td><td>${w.count}</td></tr>`).join('');
+ const weekly=`<h3 class="report-section-title">Vergleich der Kalenderwochen</h3><table class="report-table"><thead><tr><th>Kalenderwoche</th><th>Durchschnitt</th><th>Tage mit Werten</th><th>Anzahl Werte</th></tr></thead><tbody>${rows||'<tr><td colspan="4">Noch keine Stimmungswerte im Zeitraum.</td></tr>'}</tbody></table>`;
+ let trend='Noch kein Wochenvergleich möglich.';if(weekRows.length>=2){const first=weekRows[0].sum/weekRows[0].count,lastw=weekRows[weekRows.length-1].sum/weekRows[weekRows.length-1].count;const diff=lastw-first;trend=`Die erste erfasste Woche lag bei ${fmtAvg(first)} / 10, die letzte bei ${fmtAvg(lastw)} / 10. Veränderung: ${diff>0?'+':''}${fmtAvg(diff)} Punkte.`;}
+ const pages=$('moodreportpages');pages.innerHTML='<div class="moodreport-actions"><button type="button" id="report-print-now">Drucken / als PDF</button><button type="button" id="report-back">Zurück zum Wochenplan</button></div>';
+ const sheet=document.createElement('section');sheet.className='moodreport-sheet';
+ sheet.innerHTML=`<h2>Stimmungsauswertung</h2><p class="moodcurve-subtitle">${fmt(start)} bis ${fmt(end)}</p>${cards}${chartSection}${extrema}${weekly}<h3 class="report-section-title">Entwicklung</h3><p>${trend}</p><p class="report-note">Die Auswertung beschreibt die eingetragenen Stimmungswerte. Tage ohne Angaben werden nicht als Null gewertet. Das ist keine medizinische Diagnose.</p>`;
+ pages.appendChild(sheet);document.body.classList.add('moodreport-print');
+ $('report-print-now').onclick=()=>window.print();$('report-back').onclick=()=>{document.body.classList.remove('moodreport-print');pages.innerHTML='';};
+}
+$('reportgo').onclick=()=>{const from=$('reportfrom').value,to=$('reportto').value;if(!from||!to){alert('Bitte beide Daten auswählen.');return;} $('reportdialog').close();makeMoodReport(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));};
+
+// Siri-Kurzbefehl / URL-Übergabe (funktioniert, wenn die App über HTTPS bereitgestellt ist):
+// Beispiel: https://DEINE-APP-URL/?diktat=Dienstag%2010%20Uhr%20Einkaufen%20Stimmung%204
+try {
+ const params = new URLSearchParams(window.location.search);
+ const handoff = params.get('diktat') || params.get('entry') || params.get('text');
+ if (handoff) {
+   const isPdf = handlePdfHandoff(handoff);
+   if (!isPdf) {
+     $('voicedialog').showModal();
+     $('speechtext').value = handoff;
+     $('voicestatus').textContent = 'Sprachtext von Siri empfangen';
+     $('voicedetail').textContent = 'Bitte prüfe den Text und tippe auf „Einträge erkennen“.';
+   }
+   history.replaceState({}, '', window.location.pathname);
+ }
+} catch(e) {}
+
+// Erweiterungen: Stimmungskalender, Vergleich, Wochenzusammenfassung und Erinnerungen.
+function dataForDate(date){
+ const w=all[key(mondayOf(date))];const vals=[];let activities=0,entries=0;
+ for(let h=5;h<=23;h++){const c=w?.cells?.[key(date)+'_'+h]||{};if(String(c.mood||'')!==''&&Number(c.mood)>=1&&Number(c.mood)<=10)vals.push(Number(c.mood));if(String(c.activity||'').trim())activities++;if(String(c.mood||'')!==''||String(c.activity||'').trim())entries++;}
+ return {average:vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null,sum:vals.reduce((a,b)=>a+b,0),count:vals.length,activities,entries};
+}
+function moodColorClass(v){return v===null?'':v<4?'low':v<7?'mid':'high'}
+let calendarMonth=new Date(anchor.getFullYear(),anchor.getMonth(),1), selectedCalendarDate=null;
+function renderMoodCalendar(){
+ $('calmonth').textContent=calendarMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+ const grid=$('moodcalendargrid');grid.innerHTML='';
+ ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(x=>{const e=document.createElement('div');e.className='dayhead';e.textContent=x;grid.appendChild(e)});
+ const first=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1),offset=(first.getDay()+6)%7,days=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,0).getDate();
+ for(let i=0;i<offset;i++){const b=document.createElement('button');b.className='empty';b.tabIndex=-1;b.textContent=' ';grid.appendChild(b)}
+ for(let n=1;n<=days;n++){const d=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),n,12),v=dataForDate(d),b=document.createElement('button');b.textContent=n;b.className=moodColorClass(v.average)+(selectedCalendarDate===key(d)?' selected':'');b.title=v.average===null?'Keine Stimmung eingetragen':'Stimmung '+v.average.toLocaleString('de-DE',{maximumFractionDigits:1})+'/10';b.onclick=()=>{selectedCalendarDate=key(d);renderMoodCalendar();const x=dataForDate(d);$('caldetails').innerHTML='<strong>'+fmt(d)+'</strong><br>Stimmung: '+(x.average===null?'kein Eintrag':x.average.toLocaleString('de-DE',{maximumFractionDigits:1})+'/10 ('+x.count+' Werte)')+'<br>Aktivitäten in '+x.activities+' Zeitfenster(n).';};grid.appendChild(b)}
+}
+$('moodcalendar').onclick=()=>{calendarMonth=new Date(anchor.getFullYear(),anchor.getMonth(),1);selectedCalendarDate=null;$('caldetails').textContent='Wähle einen Tag aus.';renderMoodCalendar();$('calendardialog').showModal()};
+$('calprev').onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()-1);renderMoodCalendar()};
+$('calnext').onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()+1);renderMoodCalendar()};
+$('calclose').onclick=()=>$('calendardialog').close();
+function periodStats(from,to){let d=new Date(from+'T12:00:00'),end=new Date(to+'T12:00:00'),values=[],days=0,activities=0;while(d<=end){const v=dataForDate(d);if(v.average!==null){values.push({sum:v.sum,count:v.count});days++}activities+=v.activities;d.setDate(d.getDate()+1)}return {average:values.length?values.reduce((a,b)=>a+b.sum,0)/values.reduce((a,b)=>a+b.count,0):null,values:values.reduce((a,b)=>a+b.count,0),days,activities}}
+$('compareperiods').onclick=()=>{const a=new Date(anchor),b=new Date(anchor);b.setDate(b.getDate()+6);$('comparefrom1').value=key(a);$('compareto1').value=key(b);const c=new Date(a);c.setDate(c.getDate()-7);const e=new Date(c);e.setDate(e.getDate()+6);$('comparefrom2').value=key(c);$('compareto2').value=key(e);$('compareout').innerHTML='';$('comparedialog').showModal()};
+$('compareclose').onclick=()=>$('comparedialog').close();
+$('comparego').onclick=()=>{const f1=$('comparefrom1').value,t1=$('compareto1').value,f2=$('comparefrom2').value,t2=$('compareto2').value;if(!f1||!t1||!f2||!t2||f1>t1||f2>t2){alert('Bitte prüfe beide Zeiträume.');return}const a=periodStats(f1,t1),b=periodStats(f2,t2),fmtv=v=>v===null?'keine Werte':v.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+'/10';let diff=a.average!==null&&b.average!==null?'<br>Unterschied (Zeitraum 1 minus 2): <strong>'+(a.average-b.average>0?'+':'')+(a.average-b.average).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' Punkte</strong>':'';$('compareout').innerHTML='<div class="compare-result"><strong>Zeitraum 1</strong> ('+fmt(new Date(f1+'T12:00:00'))+' – '+fmt(new Date(t1+'T12:00:00'))+')<br>Durchschnitt: '+fmtv(a.average)+' · '+a.values+' Stimmungswerte · '+a.days+' Tage mit Stimmung · '+a.activities+' Aktivitätsfelder<br><br><strong>Zeitraum 2</strong> ('+fmt(new Date(f2+'T12:00:00'))+' – '+fmt(new Date(t2+'T12:00:00'))+')<br>Durchschnitt: '+fmtv(b.average)+' · '+b.values+' Stimmungswerte · '+b.days+' Tage mit Stimmung · '+b.activities+' Aktivitätsfelder'+diff+'</div>'};
+function buildWeeklySummary(){
+ const end=new Date(anchor);end.setDate(end.getDate()-1);const start=mondayOf(end);const stats=periodStats(key(start),key(end));let daysWith=0,missingMood=[],missingActivity=[];
+ for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);const v=dataForDate(d);if(v.average!==null)daysWith++;if(v.average===null)missingMood.push(DAYS[i]);if(v.activities===0)missingActivity.push(DAYS[i])}
+ const week=all[key(start)],note=(week?.note||'').trim(),avg=stats.average===null?'Keine Stimmungswerte':stats.average.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+'/10';
+ const div=document.createElement('section');div.className='summary-sheet';div.innerHTML='<h2>Wochenzusammenfassung</h2><p>'+fmt(start)+' – '+fmt(end)+'</p><ul><li><strong>Durchschnittsstimmung:</strong> '+avg+'</li><li><strong>Stimmungswerte:</strong> '+stats.values+'</li><li><strong>Tage mit Stimmungseinträgen:</strong> '+daysWith+' von 7</li><li><strong>Aktivitätsfelder ausgefüllt:</strong> '+stats.activities+'</li><li><strong>Fehlende Stimmung:</strong> '+(missingMood.join(', ')||'keine')+'</li><li><strong>Keine Aktivitäten:</strong> '+(missingActivity.join(', ')||'keine')+'</li></ul>'+(note?'<p><strong>Wochennotiz:</strong> '+escapeHtml(note)+'</p>':'')+'<p class="report-note">Zusammenfassung aus den lokal gespeicherten Einträgen. Fehlende Angaben werden nicht als Stimmung 0 gewertet.</p>';
+ const pages=$('summarypages');pages.hidden=false;pages.innerHTML='<div class="summary-actions"><button id="summaryprint">Drucken / als PDF</button><button id="summaryback">Zurück zum Wochenplan</button></div>';pages.appendChild(div);document.body.classList.add('summary-print');$('summaryprint').onclick=()=>window.print();$('summaryback').onclick=()=>{document.body.classList.remove('summary-print');pages.hidden=true;pages.innerHTML='';};
+}
+$('weeksum').onclick=buildWeeklySummary;
+function missingCurrentWeek(){let miss=0;for(let i=0;i<7;i++){const d=new Date(anchor);d.setDate(d.getDate()+i);if(d>new Date())continue;const v=dataForDate(d);if(v.average===null)miss++}return miss}
+function showMissingBanner(){const el=$('missingbanner');const missing=missingCurrentWeek();if(missing>0){el.hidden=false;el.innerHTML='<strong>Erinnerung: Es fehlen noch Stimmungsangaben.</strong><p>Für '+missing+' vergangene(n) Tag(e) dieser angezeigten Woche gibt es noch keine Stimmungseinträge.</p><button type="button" id="gotoweek">Zur Wochenübersicht</button>';$('gotoweek').onclick=()=>{el.scrollIntoView({behavior:'smooth',block:'start'})}}else{el.hidden=true}}
+$('reminders').onclick=()=>{try{$('reminderenabled').checked=localStorage.getItem('mw_reminder_enabled')==='1';$('remindertime').value=localStorage.getItem('mw_reminder_time')||'20:00';$('reminderstatus').textContent=('Notification' in window)?'Dieser Browser unterstützt Benachrichtigungen; die Erlaubnis wird beim Speichern abgefragt.':'Dieser Browser unterstützt keine Web-Benachrichtigungen.'}catch(e){}$('reminderdialog').showModal()};
+$('remindercancel').onclick=()=>$('reminderdialog').close();
+$('remindersave').onclick=async()=>{const enabled=$('reminderenabled').checked,time=$('remindertime').value||'20:00';localStorage.setItem('mw_reminder_enabled',enabled?'1':'0');localStorage.setItem('mw_reminder_time',time);if(enabled&&'Notification' in window){let permission=Notification.permission;if(permission==='default')permission=await Notification.requestPermission();$('reminderstatus').textContent=permission==='granted'?'Benachrichtigungen erlaubt. Die Erinnerung wird geprüft, solange die App geöffnet ist.':'Benachrichtigungen nicht erlaubt; die fehlenden Einträge erscheinen beim Öffnen der App.'}else $('reminderstatus').textContent='Gespeichert. Fehlende Einträge werden beim Öffnen der App angezeigt.';showMissingBanner()};
+function checkReminder(){showMissingBanner();if(localStorage.getItem('mw_reminder_enabled')!=='1')return;const time=localStorage.getItem('mw_reminder_time')||'20:00',now=new Date();if(now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')!==time)return;const stamp=key(now);if(localStorage.getItem('mw_reminder_last')===stamp||missingCurrentWeek()===0)return;localStorage.setItem('mw_reminder_last',stamp);if('Notification' in window&&Notification.permission==='granted'){try{new Notification('Mein Wochenplan',{body:'Für vergangene Tage fehlen noch Stimmungsangaben.'})}catch(e){}}}
+
+
+// Navigation: direkt zu einem Datum springen.
+$('jumpdate').value=key(anchor);
+$('jumpdate').addEventListener('change',()=>{const v=$('jumpdate').value;if(!v)return;const d=new Date(v+'T12:00:00');if(isNaN(d))return;anchor=mondayOf(d);render();$('status').textContent='Woche mit '+fmt(d)+' geöffnet.';});
+// Suche in allen gespeicherten Wochenplänen. Treffer springen direkt zur passenden Woche und Uhrzeit.
+$('searchopen').onclick=()=>{$('searchquery').value='';$('searchresults').innerHTML='';$('searchdialog').showModal();$('searchquery').focus()};
+$('searchclose').onclick=()=>$('searchdialog').close();
+function runPlanSearch(){
+ const q=$('searchquery').value.trim().toLocaleLowerCase('de-DE'),results=$('searchresults');results.innerHTML='';if(!q){results.textContent='Suchbegriff eingeben.';return}
+ const found=[];
+ for(const [weekKey,week] of Object.entries(all)){if(!week||!week.cells)continue;for(const [cellKey,c] of Object.entries(week.cells)){const activity=String(c.activity||'');if(activity.toLocaleLowerCase('de-DE').includes(q)){const m=cellKey.match(/^(\d{4}-\d{2}-\d{2})_(\d+)$/);if(m){const d=new Date(m[1]+'T12:00:00');found.push({date:d,hour:Number(m[2]),activity,mood:c.mood||''})}}}if(String(week.note||'').toLocaleLowerCase('de-DE').includes(q)){const d=new Date(weekKey+'T12:00:00');found.push({date:d,hour:null,activity:'Wochennotiz: '+week.note,mood:''})}}
+ found.sort((a,b)=>b.date-a.date||(b.hour||0)-(a.hour||0));
+ if(!found.length){results.textContent='Keine passenden Einträge gefunden.';return}
+ results.insertAdjacentHTML('beforeend','<p>'+found.length+' Treffer gefunden. Tippe einen Treffer an, um dorthin zu springen.</p>');
+ found.slice(0,100).forEach(item=>{const b=document.createElement('button');b.className='search-result';b.innerHTML='<strong>'+escapeHtml(fmt(item.date)+(item.hour===null?'':' · '+String(item.hour).padStart(2,'0')+':00'))+'</strong><span>'+escapeHtml(item.activity)+'</span>'+(item.mood?'<small>Stimmung: '+escapeHtml(item.mood)+'/10</small>':'');b.onclick=()=>{anchor=mondayOf(item.date);render();$('jumpdate').value=key(item.date);$('searchdialog').close();if(item.hour!==null){const id=key(item.date)+'_'+item.hour;const fields=[...document.querySelectorAll('#body tr')];const row=fields.find(r=>r.firstElementChild?.textContent===String(item.hour).padStart(2,'0')+':00');if(row){const dayIndex=(item.date.getDay()+6)%7;const field=row.children[dayIndex+1]?.querySelector('.activity');if(field){field.focus();field.scrollIntoView({behavior:'smooth',block:'center',inline:'center'})}}} };results.appendChild(b)});
+ if(found.length>100){const note=document.createElement('p');note.textContent='Es werden die ersten 100 Treffer angezeigt.';results.appendChild(note)}
+}
+$('searchquery').addEventListener('input',runPlanSearch);
+// Dropdown klappt nach einer gewählten Funktion wieder zu.
+document.querySelectorAll('#moremenu .menuitems button').forEach(b=>b.addEventListener('click',()=>{$('moremenu').open=false}));
+
+// Automatische Sicherungen: Wiederherstellen eines gespeicherten Browser-Snapshots.
+function renderBackupChoices(){
+ const select=$('backupselect'),info=$('backupinfo'),items=backupHistory();select.innerHTML='';
+ if(!items.length){const op=document.createElement('option');op.value='';op.textContent='Noch keine automatische Sicherung vorhanden';select.appendChild(op);$('backuprestore').disabled=true;info.textContent='Eine Sicherung wird angelegt, sobald vorhandene Daten bei einer späteren Änderung als älterer Stand gesichert werden können. Nutze „Export sichern“ für eine sofortige Sicherung.';return}
+ items.forEach((item,i)=>{const op=document.createElement('option');op.value=String(i);op.textContent=new Date(item.time).toLocaleString('de-DE')+' – '+(item.reason||'Sicherung');select.appendChild(op)});$('backuprestore').disabled=false;
+ const update=()=>{const item=items[Number(select.value)];if(!item){info.textContent='';return}try{const data=JSON.parse(item.data);const weeks=Object.keys(data).length;info.textContent='Sicherungsstand vom '+new Date(item.time).toLocaleString('de-DE')+'. Enthält '+weeks+' Wochenpläne. Beim Wiederherstellen wird der aktuelle Stand vorher gesichert.'}catch(e){info.textContent='Dieser Sicherungsstand kann nicht gelesen werden.'}};select.onchange=update;update();
+}
+$('backupmanage').onclick=()=>{renderBackupChoices();$('backupdialog').showModal()};
+$('backupclose').onclick=()=>$('backupdialog').close();
+$('backuprefresh').onclick=renderBackupChoices;
+$('backuprestore').onclick=()=>{const item=backupHistory()[Number($('backupselect').value)];if(!item){alert('Keine Sicherung ausgewählt.');return}try{const restored=JSON.parse(item.data);if(!restored||typeof restored!=='object'||Array.isArray(restored))throw Error('invalid');if(!confirm('Den ausgewählten Sicherungsstand wiederherstellen? Der aktuelle Stand wird vorher gesichert.'))return;const current=localStorage.getItem('meinWochenplanV2');if(current)saveBackupSnapshot(current,'Sicherung vor Wiederherstellung');all=restored;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();$('backupdialog').close();$('status').textContent='Sicherung wiederhergestellt · lokal auf diesem Gerät';}catch(e){alert('Diese Sicherung ist ungültig oder beschädigt.')}};
+// Reminder nur solange die App aktiv ist; kein garantierter Hintergrunddienst.
+checkReminder();setInterval(checkReminder,30000);
+
+// Cloud-Sicherung: Testversion. Zugangsdaten hier mit Project URL und Publishable Key ersetzen.
+// Niemals einen Secret- oder service_role-Schlüssel in diese Datei eintragen.
+const SUPABASE_URL = 'https://pjtirgmwezubujuvnphq.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_10alv1-N067VKGQpujRuZw_uCztJekO';
+let cloudClient = null;
+function cloudStatus(msg, bad=false){ $('cloudstatus').textContent=msg; $('cloudstatus').style.color=bad?'#a43d37':'#647067'; }
+function cloudSetLoggedIn(session){
+  const yes=!!session;
+  $('cloudactions').hidden=!yes;
+  $('cloudlogin').querySelectorAll('input').forEach(el=>el.disabled=yes);
+  $('cloudsignin').hidden=yes;
+  $('cloudsignup').hidden=yes;
+  $('cloudsignout').hidden=!yes;
+}
+async function cloudInit(){
+  if(!window.supabase){cloudStatus('Die Cloud-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen.',true);return;}
+  if(SUPABASE_URL.startsWith('HIER_')||SUPABASE_PUBLISHABLE_KEY.startsWith('HIER_')){
+    cloudStatus('Noch nicht eingerichtet: Project URL und Publishable Key müssen in dieser Testdatei eingetragen werden.');return;
+  }
+  cloudClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+  const {data,error}=await cloudClient.auth.getSession();
+  if(error){cloudStatus('Anmeldestatus konnte nicht gelesen werden: '+error.message,true);return;}
+  cloudSetLoggedIn(data.session);
+  cloudStatus(data.session?'Angemeldet. Cloud-Sicherung kann manuell gestartet werden.':'Bitte mit E-Mail und Passwort anmelden.');
+  cloudClient.auth.onAuthStateChange((_event,session)=>{cloudSetLoggedIn(session);cloudStatus(session?'Angemeldet. Cloud-Sicherung kann manuell gestartet werden.':'Abgemeldet.')});
+}
+$('cloudsignin').onclick=async()=>{
+  if(!cloudClient){cloudStatus('Bitte zuerst Project URL und Publishable Key eintragen.',true);return;}
+  const email=$('cloudemail').value.trim(),password=$('cloudpassword').value;
+  if(!email||!password){cloudStatus('Bitte E-Mail und Passwort eintragen.',true);return;}
+  cloudStatus('Anmeldung läuft …');
+  const {error}=await cloudClient.auth.signInWithPassword({email,password});
+  if(error)cloudStatus('Anmeldung fehlgeschlagen: '+error.message,true);
+};
+$('cloudsignup').onclick=async()=>{
+  if(!cloudClient){cloudStatus('Bitte zuerst Project URL und Publishable Key eintragen.',true);return;}
+  const email=$('cloudemail').value.trim(),password=$('cloudpassword').value;
+  if(!email||!password){cloudStatus('Bitte E-Mail und Passwort eintragen.',true);return;}
+  cloudStatus('Konto wird angelegt …');
+  const {data,error}=await cloudClient.auth.signUp({email,password});
+  if(error)cloudStatus('Konto konnte nicht angelegt werden: '+error.message,true);
+  else cloudStatus(data.session?'Konto erstellt und angemeldet.':'Konto angelegt. Bitte die Bestätigungs-E-Mail öffnen und anschließend anmelden.');
+};
+$('cloudsignout').onclick=async()=>{const {error}=await cloudClient.auth.signOut();cloudStatus(error?'Abmelden fehlgeschlagen: '+error.message:'Abgemeldet.',!!error)};
+$('cloudupload').onclick=async()=>{
+  if(!cloudClient)return;
+  const {data:auth,error:authErr}=await cloudClient.auth.getUser();
+  if(authErr||!auth.user){cloudStatus('Bitte erneut anmelden.',true);return;}
+  if(!confirm('Den kompletten lokalen Wochenplan einschließlich Wochennotizen in die Cloud sichern? Die Cloud-Version wird dabei ersetzt.'))return;
+  const payload={data:all,updated_at:new Date().toISOString()};
+  cloudStatus('Sicherung wird hochgeladen …');
+  const {error}=await cloudClient.from('wochenplan_cloud').upsert({user_id:auth.user.id,plan_data:payload.data,updated_at:payload.updated_at},{onConflict:'user_id'});
+  if(error)cloudStatus('Cloud-Sicherung fehlgeschlagen: '+error.message,true);
+  else cloudStatus('Cloud-Sicherung erfolgreich. Wochenpläne: '+Object.keys(all).length+'.');
+};
+$('clouddownload').onclick=async()=>{
+  if(!cloudClient)return;
+  const {data:auth,error:authErr}=await cloudClient.auth.getUser();
+  if(authErr||!auth.user){cloudStatus('Bitte erneut anmelden.',true);return;}
+  cloudStatus('Cloud-Sicherung wird gesucht …');
+  const {data,error}=await cloudClient.from('wochenplan_cloud').select('plan_data,updated_at').eq('user_id',auth.user.id).maybeSingle();
+  if(error){cloudStatus('Laden fehlgeschlagen: '+error.message,true);return;}
+  if(!data){cloudStatus('Noch keine Cloud-Sicherung für dieses Konto vorhanden.');return;}
+  if(!data.plan_data||typeof data.plan_data!=='object'||Array.isArray(data.plan_data)){cloudStatus('Die Cloud-Daten haben ein unerwartetes Format.',true);return;}
+  if(!confirm('Die Cloud-Sicherung vom '+new Date(data.updated_at).toLocaleString('de-DE')+' mit '+Object.keys(data.plan_data).length+' Wochenplänen laden? Deine aktuellen lokalen Daten werden vorher automatisch gesichert und danach ersetzt.'))return;
+  try{
+    const previous=localStorage.getItem('meinWochenplanV2');
+    if(previous)saveBackupSnapshot(previous,'Sicherung vor Cloud-Wiederherstellung');
+    all=data.plan_data;
+    localStorage.setItem('meinWochenplanV2',JSON.stringify(all));
+    render();
+    cloudStatus('Cloud-Sicherung geladen. Wochenpläne: '+Object.keys(all).length+'.');
+    $('status').textContent='Cloud-Sicherung geladen · lokal auf diesem Gerät';
+  }catch(e){cloudStatus('Wiederherstellung fehlgeschlagen: '+e.message,true)}
+};
+cloudInit();
+
+</script>
+</body>
+</html>
