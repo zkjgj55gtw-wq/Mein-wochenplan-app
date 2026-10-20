@@ -268,11 +268,19 @@ $('rangego').onclick=()=>{
 };
 function handlePdfHandoff(text){
  const t=String(text||'').trim();
+ // PDF-Befehle immer abfangen, damit sie nie als normaler Wochenplan-Eintrag landen.
  if(!/(pdf|drucken|drucke|ausdruck)/i.test(t))return false;
- const dates=[...t.matchAll(/\b(\d{2}\.\d{2}\.\d{4})\b/g)].map(m=>parseGermanDate(m[1]));
- if(dates.length<2)return false;
- if(!dates[0]||!dates[1]){alert('Datumsformat bitte TT.MM.JJJJ verwenden, z. B. 01.10.2026 bis 20.10.2026.');return true}
- printDateRange(dates[0],dates[1]);return true;
+ // Akzeptiert sowohl 01.10.2026 als auch 1.10.2026.
+ const rawDates=[...t.matchAll(/\b(\d{1,2}\.\d{1,2}\.\d{4})\b/g)].map(m=>m[1]);
+ const dates=rawDates.map(parseGermanDate);
+ if(dates.length>=2 && dates[0] && dates[1]){
+   printDateRange(dates[0],dates[1]);
+ } else {
+   // Wenn Siri das Datum als Wörter übergibt, den PDF-Dialog öffnen statt den Text einzutragen.
+   openRangeDialog();
+   $('status').textContent='PDF-Befehl erkannt. Bitte Start- und Enddatum im Dialog auswählen.';
+ }
+ return true;
 }
 render();
 
