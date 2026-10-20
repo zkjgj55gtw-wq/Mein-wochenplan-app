@@ -46,7 +46,7 @@ body.range-print #rangepages{display:block;padding:12px;background:white}
   <div class="toolbar">
     <button id="prev">← Vorherige Woche</button><div class="weektitle" id="weektitle"></div><button id="next">Nächste Woche →</button>
     <button class="voice" id="voiceopen">🎙 Eintrag diktieren</button>
-    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
+    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
   </div>
   <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
   <div class="printtitle" id="printtitle"></div>
@@ -262,6 +262,15 @@ function openRangeDialog(fromDate=null,toDate=null){
  $('rangedialog').showModal();
 }
 $('rangeprint').onclick=openRangeDialog;
+// Best-effort handoff to Safari on iOS. Custom URL scheme support can vary by iOS version.
+$('opensafari').onclick=()=>{
+ const normalUrl='https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ const safariUrl='x-safari-https://zkjgj55gtw-wq.github.io/Mein-wochenplan-app/';
+ try { window.location.href=safariUrl; } catch(e) {}
+ setTimeout(()=>{
+   alert('Falls Safari nicht geöffnet wurde: Kopiere diese Adresse und füge sie in Safari ein: '+normalUrl);
+ },900);
+};
 $('rangecancel').onclick=()=>$('rangedialog').close();
 $('rangego').onclick=()=>{
  const from=$('rangefrom').value,to=$('rangeto').value;
