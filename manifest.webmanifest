@@ -1,0 +1,10 @@
+{
+  "name": "Mein Wochenplan",
+  "short_name": "Wochenplan",
+  "description": "Wochenplan mit Aktivitäten und Stimmung von 1 bis 10",
+  "lang": "de-DE",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f0f3ef",
+  "theme_color": "#20372b"
+}
