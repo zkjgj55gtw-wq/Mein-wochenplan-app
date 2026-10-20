@@ -253,9 +253,12 @@ function printDateRange(start,end){
  $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
  try{window.print()}catch(e){}
 }
-function openRangeDialog(){
- $('rangefrom').value=key(anchor);
- const end=new Date(anchor);end.setDate(end.getDate()+6);$('rangeto').value=key(end);
+function openRangeDialog(fromDate=null,toDate=null){
+ const start=fromDate instanceof Date && !isNaN(fromDate) ? fromDate : anchor;
+ const end=toDate instanceof Date && !isNaN(toDate) ? toDate : new Date(start);
+ if(!(toDate instanceof Date) || isNaN(toDate)) end.setDate(end.getDate()+6);
+ $('rangefrom').value=key(start);
+ $('rangeto').value=key(end);
  $('rangedialog').showModal();
 }
 $('rangeprint').onclick=openRangeDialog;
@@ -266,19 +269,33 @@ $('rangego').onclick=()=>{
  $('rangedialog').close();
  printDateRange(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
 };
+function extractPdfDates(text){
+ const t=String(text||'').toLocaleLowerCase('de-DE');
+ const monthMap={januar:1,jan:1,februar:2,feb:2,maerz:3,märz:3,mar:3,april:4,apr:4,mai:5,juni:6,jun:6,juli:7,jul:7,august:8,aug:8,september:9,sep:9,oktober:10,okt:10,november:11,nov:11,dezember:12,dez:12};
+ const found=[];
+ // Numeric German dates, ISO dates, and spoken-style dates such as "1. Oktober 2026".
+ const re=/(\b\d{4}-\d{1,2}-\d{1,2}\b|\b\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\b|\b\d{1,2}\.?\s*(?:januar|jan|februar|feb|maerz|märz|mar|april|apr|mai|juni|jun|juli|jul|august|aug|september|sep|oktober|okt|november|nov|dezember|dez)\s+\d{4}\b)/ig;
+ for(const m of t.matchAll(re)){
+  const raw=m[0].trim();let d=null;
+  if(/^\d{4}-/.test(raw)){const [y,mo,da]=raw.split('-').map(Number);d=new Date(y,mo-1,da,12);if(d.getFullYear()!==y||d.getMonth()!==mo-1||d.getDate()!==da)d=null;}
+  else if(/\d{1,2}\.\s*\d{1,2}\./.test(raw)){d=parseGermanDate(raw.replace(/\s+/g,''));}
+  else {const x=raw.match(/^(\d{1,2})\.?\s*([a-zä]+)\s+(\d{4})$/i);if(x){const mo=monthMap[x[2]];if(mo){d=new Date(Number(x[3]),mo-1,Number(x[1]),12);if(d.getFullYear()!==Number(x[3])||d.getMonth()!==mo-1||d.getDate()!==Number(x[1]))d=null;}}}
+  if(d)found.push(d);
+ }
+ return found;
+}
 function handlePdfHandoff(text){
  const t=String(text||'').trim();
- // PDF-Befehle immer abfangen, damit sie nie als normaler Wochenplan-Eintrag landen.
  if(!/(pdf|drucken|drucke|ausdruck)/i.test(t))return false;
- // Akzeptiert sowohl 01.10.2026 als auch 1.10.2026.
- const rawDates=[...t.matchAll(/\b(\d{1,2}\.\d{1,2}\.\d{4})\b/g)].map(m=>m[1]);
- const dates=rawDates.map(parseGermanDate);
- if(dates.length>=2 && dates[0] && dates[1]){
-   printDateRange(dates[0],dates[1]);
- } else {
-   // Wenn Siri das Datum als Wörter übergibt, den PDF-Dialog öffnen statt den Text einzutragen.
-   openRangeDialog();
-   $('status').textContent='PDF-Befehl erkannt. Bitte Start- und Enddatum im Dialog auswählen.';
+ const dates=extractPdfDates(t);
+ // Always open the date dialog in the browser. Populate it with the spoken dates
+ // when both dates were recognized, instead of trying to print immediately.
+ if(dates.length>=2){
+  if(dates[0]<=dates[1])openRangeDialog(dates[0],dates[1]);
+  else {openRangeDialog();$('status').textContent='Das Enddatum liegt vor dem Startdatum. Bitte prüfe die Datumsfelder.';}
+ }else{
+  openRangeDialog();
+  $('status').textContent='PDF-Befehl erkannt, aber beide Daten konnten nicht sicher erkannt werden. Bitte trage sie im Dialog ein.';
  }
  return true;
 }
