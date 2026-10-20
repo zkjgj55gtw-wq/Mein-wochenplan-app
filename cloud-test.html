@@ -705,7 +705,10 @@ async function cloudInitialSync(userId){
   if(!cloudClient||cloudHandledUser===userId)return;
   cloudHandledUser=userId;cloudReady=false;cloudStatus('Cloud-Sicherung wird abgeglichen …');
   try{
-    const {data,error}=await cloudClient.from('wochenplan_cloud').select('plan_data,updated_at').eq('user_id',userId).maybeSingle();
+    const {data,error}=await Promise.race([
+      cloudClient.from('wochenplan_cloud').select('plan_data,updated_at').eq('user_id',userId).maybeSingle(),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Zeitüberschreitung beim Cloud-Abgleich. Bitte Verbindung prüfen und erneut anmelden.')),12000))
+    ]);
     if(error)throw error;
     const localRaw=cloudLocalJson();
     if(!data){
@@ -742,7 +745,7 @@ async function cloudInitialSync(userId){
     }else{
       cloudReady=true;await cloudUpload(false);
     }
-  }catch(e){cloudReady=false;cloudStatus('Cloud-Abgleich fehlgeschlagen: '+e.message,true)}
+  }catch(e){cloudReady=false;cloudHandledUser=null;cloudStatus('Cloud-Abgleich fehlgeschlagen: '+e.message+' Bitte einmal abmelden und erneut anmelden.',true)}
   finally{cloudApplying=false}
 }
 async function cloudInit(){
@@ -769,8 +772,9 @@ $('cloudsignin').onclick=async()=>{
   const email=$('cloudemail').value.trim(),password=$('cloudpassword').value;
   if(!email||!password){cloudStatus('Bitte E-Mail und Passwort eintragen.',true);return;}
   cloudStatus('Anmeldung läuft …');
-  const {error}=await cloudClient.auth.signInWithPassword({email,password});
+  const {data,error}=await cloudClient.auth.signInWithPassword({email,password});
   if(error)cloudStatus('Anmeldung fehlgeschlagen: '+error.message,true);
+  else if(data.session){cloudHandledUser=null;await cloudInitialSync(data.session.user.id);}
 };
 $('cloudsignup').onclick=async()=>{
   const email=$('cloudemail').value.trim(),password=$('cloudpassword').value;
