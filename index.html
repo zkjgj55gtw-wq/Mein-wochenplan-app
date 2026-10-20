@@ -98,29 +98,52 @@ $('startvoice').onclick=()=>{
 };
 function norm(s){return s.toLocaleLowerCase('de-DE').replace(/[.,;!?]/g,' ').replace(/\s+/g,' ').trim()}
 function parseSpeech(text){
- const sentences=text.replace(/\n/g,'. ').split(/[.;!?]+/).map(s=>s.trim()).filter(Boolean),out=[];
- let inheritedDay=null;
+ const dayWords=[['montag',0],['dienstag',1],['mittwoch',2],['donnerstag',3],['freitag',4],['samstag',5],['sonntag',6]];
+ const wordNums={zehn:10,eins:1,ein:1,zwei:2,drei:3,vier:4,fünf:5,fuenf:5,sechs:6,sieben:7,acht:8,neun:9};
+ // Split on explicit time expressions, so several entries can be dictated in one go.
+ const timeRe=/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*uhr\b/ig;
+ const matches=[...text.matchAll(timeRe)];
+ if(!matches.length)return parseSpeechFallback(text,dayWords,wordNums);
+ const chunks=[];
+ for(let i=0;i<matches.length;i++){
+   const m=matches[i],from=m.index,to=i+1<matches.length?matches[i+1].index:text.length;
+   const prefix=i===0?text.slice(0,from):'';
+   chunks.push({raw:(prefix+' '+text.slice(from,to)).trim(),time:Number(m[1])});
+ }
+ let inheritedDay=null;const out=[];
+ for(const chunk of chunks){
+   const s=chunk.raw.toLocaleLowerCase('de-DE');let dayIndex=-1;
+   for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b','i').test(s)){dayIndex=idx;inheritedDay=idx;break}}
+   if(dayIndex<0)dayIndex=inheritedDay;
+   const hour=chunk.time;if(hour<5||hour>23)continue;
+   const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+   let mood=null;
+   const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/i);
+   if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+   else {const nums=[...s.matchAll(/\b(10|[1-9])\b/g)].map(m=>Number(m[1]));if(nums.length>1)mood=nums[nums.length-1]}
+   if(mood!==null&&(mood<1||mood>10))mood=null;
+   let activity=chunk.raw;
+   activity=activity.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'');
+   activity=activity.replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*uhr\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'');
+   activity=activity.replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,;:.!?-]+|[\s,;:.!?-]+$/g,'').trim();
+   if(!activity)activity='Aktivität bitte ergänzen';
+   out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
+ }
+ return out;
+}
+function parseSpeechFallback(text,dayWords,wordNums){
+ const sentences=text.replace(/\n/g,'. ').split(/[.;!?]+/).map(s=>s.trim()).filter(Boolean),out=[];let inheritedDay=null;
  for(const sentence of sentences){
-  const s=norm(sentence);let dayIndex=-1;
-  const dayWords=[['montag',0],['dienstag',1],['mittwoch',2],['donnerstag',3],['freitag',4],['samstag',5],['sonntag',6]];
+  const s=sentence.toLocaleLowerCase('de-DE');let dayIndex=-1;
   for(const [word,idx] of dayWords){if(new RegExp('\\b'+word+'\\b').test(s)){dayIndex=idx;inheritedDay=idx;break}}
   if(dayIndex<0)dayIndex=inheritedDay;
-  const date=new Date(anchor);if(dayIndex>=0)date.setDate(date.getDate()+dayIndex);
-  let hour=null;
   const timeMatch=s.match(/\b(?:um\s*)?(\d{1,2})(?:[:.](\d{2}))?\s*(?:uhr)?\b/);
-  if(timeMatch){const n=Number(timeMatch[1]);if(n>=5&&n<=23)hour=n;else if(n>=0&&n<=4)hour=n+24>23?null:n;}
-  if(hour===null)continue;
-  let mood=null;
-  const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/);
-  const words={zehn:10,eins:1,ein:1,zwei:2,drei:3,vier:4,fünf:5,fuenf:5,sechs:6,sieben:7,acht:8,neun:9};
-  if(moodMatch)mood=Number(moodMatch[1]||words[moodMatch[2]]);
-  else {const nums=[...s.matchAll(/\b(10|[1-9])\b/g)].map(m=>Number(m[1]));if(nums.length>1)mood=nums[nums.length-1]}
-  if(mood!==null&&(mood<1||mood>10))mood=null;
-  let activity=sentence;
-  activity=activity.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'');
-  activity=activity.replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*(?:uhr)?\b/ig,'');
-  activity=activity.replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'');
-  activity=activity.replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\b(1|2|3|4|5|6|7|8|9|10)\b/g,'').replace(/\s+/g,' ').replace(/^[\s,:-]+|[\s,:-]+$/g,'').trim();
+  if(!timeMatch)continue;const hour=Number(timeMatch[1]);if(hour<5||hour>23)continue;
+  const date=new Date(anchor);if(dayIndex!==null&&dayIndex>=0)date.setDate(date.getDate()+dayIndex);
+  let mood=null;const moodMatch=s.match(/(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9])\b|(?:stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/);
+  if(moodMatch)mood=Number(moodMatch[1]||wordNums[moodMatch[2]]);
+  let activity=sentence.replace(/\b(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b/ig,'').replace(/\b(?:um\s*)?\d{1,2}(?:[:.]\d{2})?\s*(?:uhr)?\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\s*(?:ist|war|von)?\s*(10|[1-9]|zehn|eins|ein|zwei|drei|vier|fünf|fuenf|sechs|sieben|acht|neun)\b/ig,'').replace(/\b(stimmung|gefühl|bewertung)\b/ig,'').replace(/\s+/g,' ').replace(/^[\s,:-]+|[\s,:-]+$/g,'').trim();
   if(!activity)activity='Aktivität bitte ergänzen';
   out.push({date:key(date),day:DAYS[dayIndex>=0?dayIndex:0],hour,activity,mood:mood||'',dateLabel:fmt(date)});
  }
