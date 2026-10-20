@@ -85,6 +85,9 @@ body.moodreport-print #moodreportpages{display:block;background:#fff;padding:12p
 
 
 .mood-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:12px}.mood-calendar .dayhead{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}.mood-calendar button{min-width:0;border:1px solid #d8ded8;border-radius:7px;padding:8px 1px;background:#f7f9f7;font-size:12px;color:#202820}.mood-calendar button.empty{visibility:hidden}.mood-calendar button.low{background:#f5c7c3}.mood-calendar button.mid{background:#f8e7a6}.mood-calendar button.high{background:#cce8ce}.mood-calendar button.selected{outline:2px solid #20372b}.compare-result{margin-top:14px;padding:12px;background:#f0f3ef;border-radius:8px;font-size:14px;line-height:1.6}.summary-sheet{background:white;padding:16px;max-width:900px;margin:0 auto}.summary-sheet h2{margin:0 0 8px}.summary-sheet li{margin:7px 0}
+.summary-actions{display:flex;gap:8px;flex-wrap:wrap;margin:0 auto 14px;max-width:900px}.summary-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+.toolbar{align-items:center}.toolbar .navgroup{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.toolbar input[type=date]{border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px;font:14px Arial;color:var(--ink);max-width:155px}.moremenu{position:relative}.moremenu summary{list-style:none;border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 13px;cursor:pointer;font-size:14px}.moremenu summary::-webkit-details-marker{display:none}.moremenu[open] .menuitems{display:grid}.menuitems{display:none;position:absolute;z-index:20;right:0;top:calc(100% + 5px);min-width:220px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px #0002;gap:5px}.menuitems button{width:100%;text-align:left;white-space:normal}.search-results{max-height:45vh;overflow:auto}.search-result{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px;margin:6px 0}.search-result small{display:block;color:var(--muted);margin-top:3px}
+@media(max-width:650px){.toolbar .navgroup{width:100%}.toolbar .navgroup button{flex:1}.moremenu{width:100%}.moremenu summary{text-align:center}.menuitems{position:static;min-width:0}.toolbar input[type=date]{flex:1;max-width:none}}
 body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages,body.summary-print>#moodcurvepages,body.summary-print>#moodreportpages{display:none!important}body.summary-print>#summarypages{display:block!important}body.summary-print .moodreport-actions{display:none!important}@media print{body.summary-print>header,body.summary-print>main{display:none!important}body.summary-print>#summarypages{display:block!important}body.summary-print .summary-sheet{padding:0;max-width:none}@page{size:A4 portrait;margin:12mm}}
 </style>
 </head>
@@ -92,9 +95,11 @@ body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages
 <header><div class="wrap"><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div></header>
 <main>
   <div class="toolbar">
-    <button id="prev">← Vorherige Woche</button><div class="weektitle" id="weektitle"></div><button id="next">Nächste Woche →</button>
-    <button class="voice" id="voiceopen">🎙 Eintrag diktieren</button>
-    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button><button id="reminders">Erinnerungen</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
+    <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
+    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
+    <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
+      <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button><button id="reminders">Erinnerungen</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button>
+    </div></details><input type="file" id="importfile" accept="application/json" hidden>
   </div>
   <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
   <div class="printtitle" id="printtitle"></div>
@@ -122,6 +127,7 @@ body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages
  <label for="remindertime">Erinnerungszeit (wenn die App geöffnet ist)</label><input id="remindertime" type="time" value="20:00"><label><input id="reminderenabled" type="checkbox" style="width:auto"> Tägliche Erinnerung aktivieren</label><p id="reminderstatus" class="small"></p></div>
  <div class="modalactions"><button id="remindercancel">Schließen</button><button class="primary" id="remindersave">Einstellungen speichern</button></div>
 </dialog>
+<dialog id="searchdialog"><div class="modalhead"><h2>Wochenplan durchsuchen</h2></div><div class="modalbody"><p>Suche in gespeicherten Aktivitäten und Notizen.</p><label for="searchquery">Suchbegriff</label><input id="searchquery" type="search" placeholder="z. B. Arzt, Streit, Spaziergang"><div id="searchresults" class="search-results" aria-live="polite"></div></div><div class="modalactions"><button id="searchclose">Schließen</button></div></dialog>
 <div id="summarypages" hidden></div>
 
 <dialog id="rangedialog">
@@ -180,7 +186,7 @@ function fmt(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digi
 function weekRange(){let e=new Date(anchor);e.setDate(e.getDate()+6);return `${fmt(anchor)} – ${fmt(e)}`}
 function persist(message='Gespeichert'){localStorage.setItem('meinWochenplanV2',JSON.stringify(all));$('status').textContent=message+' · lokal auf diesem Gerät'}
 function render(){
- $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();
+ $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
  const h=$('headrow');h.innerHTML='<th>Uhrzeit</th>';
  DAYS.forEach((day,i)=>{let d=new Date(anchor);d.setDate(d.getDate()+i);let th=document.createElement('th');th.textContent=day+' '+fmt(d).slice(0,5);h.appendChild(th)});
  const body=$('body');body.innerHTML='';
@@ -546,7 +552,7 @@ function buildWeeklySummary(){
  for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);const v=dataForDate(d);if(v.average!==null)daysWith++;if(v.average===null)missingMood.push(DAYS[i]);if(v.activities===0)missingActivity.push(DAYS[i])}
  const week=all[key(start)],note=(week?.note||'').trim(),avg=stats.average===null?'Keine Stimmungswerte':stats.average.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+'/10';
  const div=document.createElement('section');div.className='summary-sheet';div.innerHTML='<h2>Wochenzusammenfassung</h2><p>'+fmt(start)+' – '+fmt(end)+'</p><ul><li><strong>Durchschnittsstimmung:</strong> '+avg+'</li><li><strong>Stimmungswerte:</strong> '+stats.values+'</li><li><strong>Tage mit Stimmungseinträgen:</strong> '+daysWith+' von 7</li><li><strong>Aktivitätsfelder ausgefüllt:</strong> '+stats.activities+'</li><li><strong>Fehlende Stimmung:</strong> '+(missingMood.join(', ')||'keine')+'</li><li><strong>Keine Aktivitäten:</strong> '+(missingActivity.join(', ')||'keine')+'</li></ul>'+(note?'<p><strong>Wochennotiz:</strong> '+escapeHtml(note)+'</p>':'')+'<p class="report-note">Zusammenfassung aus den lokal gespeicherten Einträgen. Fehlende Angaben werden nicht als Stimmung 0 gewertet.</p>';
- const pages=$('summarypages');pages.hidden=false;pages.innerHTML='<div class="moodreport-actions"><button id="summaryprint">Drucken / als PDF</button><button id="summaryback">Zurück zum Wochenplan</button></div>';pages.appendChild(div);document.body.classList.add('summary-print');$('summaryprint').onclick=()=>window.print();$('summaryback').onclick=()=>{document.body.classList.remove('summary-print');pages.hidden=true;pages.innerHTML='';};
+ const pages=$('summarypages');pages.hidden=false;pages.innerHTML='<div class="summary-actions"><button id="summaryprint">Drucken / als PDF</button><button id="summaryback">Zurück zum Wochenplan</button></div>';pages.appendChild(div);document.body.classList.add('summary-print');$('summaryprint').onclick=()=>window.print();$('summaryback').onclick=()=>{document.body.classList.remove('summary-print');pages.hidden=true;pages.innerHTML='';};
 }
 $('weeksum').onclick=buildWeeklySummary;
 function missingCurrentWeek(){let miss=0;for(let i=0;i<7;i++){const d=new Date(anchor);d.setDate(d.getDate()+i);if(d>new Date())continue;const v=dataForDate(d);if(v.average===null)miss++}return miss}
@@ -555,6 +561,27 @@ $('reminders').onclick=()=>{try{$('reminderenabled').checked=localStorage.getIte
 $('remindercancel').onclick=()=>$('reminderdialog').close();
 $('remindersave').onclick=async()=>{const enabled=$('reminderenabled').checked,time=$('remindertime').value||'20:00';localStorage.setItem('mw_reminder_enabled',enabled?'1':'0');localStorage.setItem('mw_reminder_time',time);if(enabled&&'Notification' in window){let permission=Notification.permission;if(permission==='default')permission=await Notification.requestPermission();$('reminderstatus').textContent=permission==='granted'?'Benachrichtigungen erlaubt. Die Erinnerung wird geprüft, solange die App geöffnet ist.':'Benachrichtigungen nicht erlaubt; die fehlenden Einträge erscheinen beim Öffnen der App.'}else $('reminderstatus').textContent='Gespeichert. Fehlende Einträge werden beim Öffnen der App angezeigt.';showMissingBanner()};
 function checkReminder(){showMissingBanner();if(localStorage.getItem('mw_reminder_enabled')!=='1')return;const time=localStorage.getItem('mw_reminder_time')||'20:00',now=new Date();if(now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')!==time)return;const stamp=key(now);if(localStorage.getItem('mw_reminder_last')===stamp||missingCurrentWeek()===0)return;localStorage.setItem('mw_reminder_last',stamp);if('Notification' in window&&Notification.permission==='granted'){try{new Notification('Mein Wochenplan',{body:'Für vergangene Tage fehlen noch Stimmungsangaben.'})}catch(e){}}}
+
+
+// Navigation: direkt zu einem Datum springen.
+$('jumpdate').value=key(anchor);
+$('jumpdate').addEventListener('change',()=>{const v=$('jumpdate').value;if(!v)return;const d=new Date(v+'T12:00:00');if(isNaN(d))return;anchor=mondayOf(d);render();$('status').textContent='Woche mit '+fmt(d)+' geöffnet.';});
+// Suche in allen gespeicherten Wochenplänen. Treffer springen direkt zur passenden Woche und Uhrzeit.
+$('searchopen').onclick=()=>{$('searchquery').value='';$('searchresults').innerHTML='';$('searchdialog').showModal();$('searchquery').focus()};
+$('searchclose').onclick=()=>$('searchdialog').close();
+function runPlanSearch(){
+ const q=$('searchquery').value.trim().toLocaleLowerCase('de-DE'),results=$('searchresults');results.innerHTML='';if(!q){results.textContent='Suchbegriff eingeben.';return}
+ const found=[];
+ for(const [weekKey,week] of Object.entries(all)){if(!week||!week.cells)continue;for(const [cellKey,c] of Object.entries(week.cells)){const activity=String(c.activity||'');if(activity.toLocaleLowerCase('de-DE').includes(q)){const m=cellKey.match(/^(\d{4}-\d{2}-\d{2})_(\d+)$/);if(m){const d=new Date(m[1]+'T12:00:00');found.push({date:d,hour:Number(m[2]),activity,mood:c.mood||''})}}}if(String(week.note||'').toLocaleLowerCase('de-DE').includes(q)){const d=new Date(weekKey+'T12:00:00');found.push({date:d,hour:null,activity:'Wochennotiz: '+week.note,mood:''})}}
+ found.sort((a,b)=>b.date-a.date||(b.hour||0)-(a.hour||0));
+ if(!found.length){results.textContent='Keine passenden Einträge gefunden.';return}
+ results.insertAdjacentHTML('beforeend','<p>'+found.length+' Treffer gefunden. Tippe einen Treffer an, um dorthin zu springen.</p>');
+ found.slice(0,100).forEach(item=>{const b=document.createElement('button');b.className='search-result';b.innerHTML='<strong>'+escapeHtml(fmt(item.date)+(item.hour===null?'':' · '+String(item.hour).padStart(2,'0')+':00'))+'</strong><span>'+escapeHtml(item.activity)+'</span>'+(item.mood?'<small>Stimmung: '+escapeHtml(item.mood)+'/10</small>':'');b.onclick=()=>{anchor=mondayOf(item.date);render();$('jumpdate').value=key(item.date);$('searchdialog').close();if(item.hour!==null){const id=key(item.date)+'_'+item.hour;const fields=[...document.querySelectorAll('#body tr')];const row=fields.find(r=>r.firstElementChild?.textContent===String(item.hour).padStart(2,'0')+':00');if(row){const dayIndex=(item.date.getDay()+6)%7;const field=row.children[dayIndex+1]?.querySelector('.activity');if(field){field.focus();field.scrollIntoView({behavior:'smooth',block:'center',inline:'center'})}}} };results.appendChild(b)});
+ if(found.length>100){const note=document.createElement('p');note.textContent='Es werden die ersten 100 Treffer angezeigt.';results.appendChild(note)}
+}
+$('searchquery').addEventListener('input',runPlanSearch);
+// Dropdown klappt nach einer gewählten Funktion wieder zu.
+document.querySelectorAll('#moremenu .menuitems button').forEach(b=>b.addEventListener('click',()=>{$('moremenu').open=false}));
 
 // Reminder nur solange die App aktiv ist; kein garantierter Hintergrunddienst.
 checkReminder();setInterval(checkReminder,30000);
