@@ -14,6 +14,30 @@ dialog{width:min(600px,calc(100% - 24px));border:0;border-radius:16px;padding:0;
 @keyframes pulse{50%{opacity:.65}}
 @media(max-width:650px){header{padding:18px 14px}header h1{font-size:23px}main{padding:10px}.weektitle{width:100%}.toolbar button{padding:9px 10px}.weekgrid{min-width:900px}}
 @media print{@page{size:A4 landscape;margin:8mm}body{background:white;color:#111;font-size:9px}header{background:white;color:#111;padding:0 0 8px}header h1{font-size:18px}header p{color:#333;font-size:9px}.toolbar,.hint,.status{display:none!important}main{padding:0;max-width:none}.gridwrap{overflow:visible;border:0;box-shadow:none;border-radius:0}.weekgrid{min-width:0;width:100%;border-collapse:collapse}.weekgrid thead th{background:#eee!important;print-color-adjust:exact;padding:4px 2px;font-size:9px}.weekgrid thead th:first-child,.weekgrid tbody th{width:36px}.weekgrid tbody th{font-size:8px}.slot{height:22px}.cell{padding:1px;min-height:21px;gap:0}.activity{font-size:8px;min-height:13px;max-height:none;padding:1px;border:0;resize:none;overflow:hidden}.mood{font-size:8px;padding:0;border:0;background:white}.note{margin-top:6px;padding:5px;border-radius:0}.note label{font-size:9px;margin-bottom:3px}.note textarea{min-height:30px;height:30px;font-size:9px;padding:3px;border:0}.printtitle{display:block;font-size:10px;margin-bottom:5px}dialog{display:none!important}}
+
+#rangepages{display:none}
+body.range-print>header,body.range-print>main{display:none!important}
+body.range-print #rangepages{display:block;padding:12px;background:white}
+.range-actions{display:flex;gap:8px;margin:0 0 12px}
+.range-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
+
+@media print{
+  body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
+  body.range-print #rangepages{display:block!important}
+  .range-page{break-after:page;page-break-after:always;padding:0}
+  .range-page:last-child{break-after:auto;page-break-after:auto}
+  .range-page h2{font-size:15px;margin:0 0 5px}
+  .range-page .range-subtitle{font-size:9px;margin:0 0 6px}
+  .range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8px}
+  .range-table th,.range-table td{border:1px solid #999;padding:2px;vertical-align:top}
+  .range-table th{background:#eee!important;print-color-adjust:exact}
+  .range-table th:first-child{width:40px}
+  .range-table .r-hour{width:40px;text-align:center}
+  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .range-table .r-mood{font-size:7px;color:#333}
+  .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
+  @page{size:A4 landscape;margin:8mm}
+}
 </style>
 </head>
 <body>
@@ -22,7 +46,7 @@ dialog{width:min(600px,calc(100% - 24px));border:0;border-radius:16px;padding:0;
   <div class="toolbar">
     <button id="prev">← Vorherige Woche</button><div class="weektitle" id="weektitle"></div><button id="next">Nächste Woche →</button>
     <button class="voice" id="voiceopen">🎙 Eintrag diktieren</button>
-    <button class="primary" id="print">Drucken / als PDF</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
+    <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><input type="file" id="importfile" accept="application/json" hidden>
   </div>
   <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
   <div class="printtitle" id="printtitle"></div>
@@ -31,6 +55,16 @@ dialog{width:min(600px,calc(100% - 24px));border:0;border-radius:16px;padding:0;
   <p class="status" id="status" aria-live="polite">Änderungen werden lokal gespeichert.</p>
 </main>
 
+<dialog id="rangedialog">
+  <div class="modalhead"><h2>PDF für Zeitraum erstellen</h2></div>
+  <div class="modalbody">
+    <p>Wähle den gewünschten Zeitraum. Jede betroffene Kalenderwoche wird auf einer eigenen A4-Seite im Querformat ausgegeben.</p>
+    <label for="rangefrom">Von</label><input id="rangefrom" type="date">
+    <label for="rangeto">Bis</label><input id="rangeto" type="date">
+  </div>
+  <div class="modalactions"><button id="rangecancel">Abbrechen</button><button class="primary" id="rangego">PDF vorbereiten</button></div>
+</dialog>
+<div id="rangepages"></div>
 <dialog id="voicedialog">
   <div class="modalhead"><h2>Einträge diktieren</h2></div>
   <div class="modalbody">
@@ -165,18 +199,96 @@ $('savevoice').onclick=()=>{
  boxes.forEach(box=>{const val=k=>box.querySelector(`[data-k="${k}"]`).value;const di=Number(val('day'));const date=new Date(anchor);date.setDate(date.getDate()+di);const hour=Number(val('hour'));const id=key(date)+'_'+hour;const targetMonday=new Date(date);targetMonday.setDate(targetMonday.getDate()-(targetMonday.getDay()===0?6:targetMonday.getDay()-1));const weekKey=key(targetMonday);if(!all[weekKey])all[weekKey]={cells:{},note:''};all[weekKey].cells[id]={activity:val('activity').trim(),mood:val('mood')};count++});
  persist(`${count} Einträge übernommen`);render();$('voicedialog').close();
 };
+
+function escapeHtml(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function parseGermanDate(s){
+ const m=String(s).match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+ if(!m)return null;
+ const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),12,0,0,0);
+ return d.getFullYear()===Number(m[3])&&d.getMonth()===Number(m[2])-1&&d.getDate()===Number(m[1])?d:null;
+}
+function mondayOf(date){
+ const d=new Date(date);d.setHours(12,0,0,0);
+ d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));return d;
+}
+function printDateRange(start,end){
+ if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
+  alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
+ }
+ const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ let monday=mondayOf(start);
+ while(monday<=end){
+  const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
+  const week=all[key(monday)]||{cells:{},note:''};
+  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
+  const dates=[];
+  for(let i=0;i<7;i++){
+   const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
+   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+   table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
+  }
+  table+='</tr></thead><tbody>';
+  for(let hour=5;hour<=23;hour++){
+   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
+   for(const d of dates){
+    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+    const data=week.cells?.[key(d)+'_'+hour]||{};
+    const activity=inRange?(data.activity||''):'';
+    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
+    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
+   }
+   table+='</tr>';
+  }
+  table+='</tbody></table>';
+  const section=document.createElement('section');section.className='range-page';
+  const note=(week.note||'').trim();
+  section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
+  pages.appendChild(section);
+  monday.setDate(monday.getDate()+7);
+ }
+ document.body.classList.add('range-print');
+ $('range-print-now').onclick=()=>window.print();
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
+ try{window.print()}catch(e){}
+}
+function openRangeDialog(){
+ $('rangefrom').value=key(anchor);
+ const end=new Date(anchor);end.setDate(end.getDate()+6);$('rangeto').value=key(end);
+ $('rangedialog').showModal();
+}
+$('rangeprint').onclick=openRangeDialog;
+$('rangecancel').onclick=()=>$('rangedialog').close();
+$('rangego').onclick=()=>{
+ const from=$('rangefrom').value,to=$('rangeto').value;
+ if(!from||!to){alert('Bitte beide Daten auswählen.');return}
+ $('rangedialog').close();
+ printDateRange(new Date(from+'T12:00:00'),new Date(to+'T12:00:00'));
+};
+function handlePdfHandoff(text){
+ const t=String(text||'').trim();
+ if(!/(pdf|drucken|drucke|ausdruck)/i.test(t))return false;
+ const dates=[...t.matchAll(/\b(\d{2}\.\d{2}\.\d{4})\b/g)].map(m=>parseGermanDate(m[1]));
+ if(dates.length<2)return false;
+ if(!dates[0]||!dates[1]){alert('Datumsformat bitte TT.MM.JJJJ verwenden, z. B. 01.10.2026 bis 20.10.2026.');return true}
+ printDateRange(dates[0],dates[1]);return true;
+}
 render();
 
 // Siri-Kurzbefehl / URL-Übergabe (funktioniert, wenn die App über HTTPS bereitgestellt ist):
 // Beispiel: https://DEINE-APP-URL/?diktat=Dienstag%2010%20Uhr%20Einkaufen%20Stimmung%204
 try {
  const params = new URLSearchParams(window.location.search);
- const handoff = params.get('diktat') || params.get('entry');
+ const handoff = params.get('diktat') || params.get('entry') || params.get('text');
  if (handoff) {
-   $('voicedialog').showModal();
-   $('speechtext').value = handoff;
-   $('voicestatus').textContent = 'Sprachtext von Siri empfangen';
-   $('voicedetail').textContent = 'Bitte prüfe den Text und tippe auf „Einträge erkennen“.';
+   const isPdf = handlePdfHandoff(handoff);
+   if (!isPdf) {
+     $('voicedialog').showModal();
+     $('speechtext').value = handoff;
+     $('voicestatus').textContent = 'Sprachtext von Siri empfangen';
+     $('voicedetail').textContent = 'Bitte prüfe den Text und tippe auf „Einträge erkennen“.';
+   }
    history.replaceState({}, '', window.location.pathname);
  }
 } catch(e) {}
