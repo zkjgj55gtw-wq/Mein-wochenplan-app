@@ -98,7 +98,7 @@ body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages
     <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
     <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
     <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
-      <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button><button id="reminders">Erinnerungen</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button>
+      <button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button><button id="reminders">Erinnerungen</button><button id="opensafari">In Safari öffnen</button><button id="export">Export sichern</button><button id="importbtn">Export laden</button><button id="backupmanage">Automatische Sicherungen</button>
     </div></details><input type="file" id="importfile" accept="application/json" hidden>
   </div>
   <p class="hint">Diktieren: Tippe auf „Eintrag diktieren“, sprich deine Einträge und prüfe sie vor dem Übernehmen. Beispiel: „Dienstag, 10 Uhr: Einkaufen, Stimmung 4. Um 14 Uhr Streit gehabt, Stimmung 2.“ Die automatische Spracherkennung hängt von deinem Browser und dessen Mikrofonberechtigungen ab. Alternativ kannst du den Text über das Mikrofon deiner iPhone-Tastatur diktieren.</p>
@@ -129,6 +129,15 @@ body.summary-print>header,body.summary-print>main,body.summary-print>#rangepages
 </dialog>
 <dialog id="searchdialog"><div class="modalhead"><h2>Wochenplan durchsuchen</h2></div><div class="modalbody"><p>Suche in gespeicherten Aktivitäten und Notizen.</p><label for="searchquery">Suchbegriff</label><input id="searchquery" type="search" placeholder="z. B. Arzt, Streit, Spaziergang"><div id="searchresults" class="search-results" aria-live="polite"></div></div><div class="modalactions"><button id="searchclose">Schließen</button></div></dialog>
 <div id="summarypages" hidden></div>
+<dialog id="backupdialog">
+ <div class="modalhead"><h2>Datensicherung</h2></div>
+ <div class="modalbody">
+  <p>Die App legt im Browser automatisch ältere Sicherungsstände an, wenn sich Daten ändern. Das schützt vor versehentlichem Überschreiben, aber nicht zuverlässig vor dem Löschen der Browserdaten oder einem Geräteverlust. Dafür bitte zusätzlich regelmäßig „Export sichern“ verwenden und die Datei z. B. in Dateien/iCloud Drive speichern.</p>
+  <label for="backupselect">Sicherungsstand auswählen</label><select id="backupselect"></select>
+  <p id="backupinfo" class="small"></p>
+ </div>
+ <div class="modalactions"><button id="backupclose">Schließen</button><button id="backuprefresh">Aktualisieren</button><button class="primary" id="backuprestore">Sicherung wiederherstellen</button></div>
+</dialog>
 
 <dialog id="rangedialog">
   <div class="modalhead"><h2>PDF für Zeitraum erstellen</h2></div>
@@ -184,7 +193,20 @@ function key(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'
 function current(){if(!all[key(anchor)])all[key(anchor)]={cells:{},note:''};return all[key(anchor)]}
 function fmt(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}
 function weekRange(){let e=new Date(anchor);e.setDate(e.getDate()+6);return `${fmt(anchor)} – ${fmt(e)}`}
-function persist(message='Gespeichert'){localStorage.setItem('meinWochenplanV2',JSON.stringify(all));$('status').textContent=message+' · lokal auf diesem Gerät'}
+const BACKUP_KEY='meinWochenplanV2_autoBackups';
+function backupHistory(){try{const x=JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
+function saveBackupSnapshot(raw,reason='Automatische Sicherung'){
+ if(!raw)return false;try{const parsed=JSON.parse(raw);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return false;
+  const list=backupHistory();const stamp=Date.now();if(list.length&&list[0].data===raw)return false;
+  list.unshift({time:stamp,reason,data:raw});localStorage.setItem(BACKUP_KEY,JSON.stringify(list.slice(0,20)));localStorage.setItem('meinWochenplanV2_lastBackup',String(stamp));return true;
+ }catch(e){return false}
+}
+function persist(message='Gespeichert'){
+ const previous=localStorage.getItem('meinWochenplanV2'),next=JSON.stringify(all),last=Number(localStorage.getItem('meinWochenplanV2_lastBackup')||0);
+ // Keep a restore point at most every 10 minutes, and before a destructive replacement.
+ if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
+ localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';
+}
 function render(){
  $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
  const h=$('headrow');h.innerHTML='<th>Uhrzeit</th>';
@@ -208,7 +230,7 @@ $('next').onclick=()=>{anchor.setDate(anchor.getDate()+7);render()};
 $('print').onclick=()=>window.print();
 $('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importbtn').onclick=()=>$('importfile').click();
-$('importfile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error();if(confirm('Import ersetzt alle derzeit gespeicherten Wochenpläne. Fortfahren?')){all=obj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();persist('Import abgeschlossen')}}catch(err){alert('Diese Datei ist kein gültiger Wochenplan-Export.')}e.target.value=''};
+$('importfile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error();if(confirm('Import ersetzt alle derzeit gespeicherten Wochenpläne. Der aktuelle Stand wird vorher gesichert. Fortfahren?')){const previous=localStorage.getItem('meinWochenplanV2');if(previous)saveBackupSnapshot(previous,'Sicherung vor Import');all=obj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();persist('Import abgeschlossen')}}catch(err){alert('Diese Datei ist kein gültiger Wochenplan-Export.')}e.target.value=''};
 $('voiceopen').onclick=()=>{$('voicedialog').showModal();$('speechtext').value='';$('parsedarea').hidden=true;$('savevoice').hidden=true;parsed=[];$('voicestatus').textContent='Bereit zum Diktieren';$('voicedetail').textContent='Tippe auf das Mikrofon, um zu beginnen.'};
 $('closevoice').onclick=()=>{if(recognition)try{recognition.stop()}catch{};$('voicedialog').close()};
 $('startvoice').onclick=()=>{
@@ -583,6 +605,17 @@ $('searchquery').addEventListener('input',runPlanSearch);
 // Dropdown klappt nach einer gewählten Funktion wieder zu.
 document.querySelectorAll('#moremenu .menuitems button').forEach(b=>b.addEventListener('click',()=>{$('moremenu').open=false}));
 
+// Automatische Sicherungen: Wiederherstellen eines gespeicherten Browser-Snapshots.
+function renderBackupChoices(){
+ const select=$('backupselect'),info=$('backupinfo'),items=backupHistory();select.innerHTML='';
+ if(!items.length){const op=document.createElement('option');op.value='';op.textContent='Noch keine automatische Sicherung vorhanden';select.appendChild(op);$('backuprestore').disabled=true;info.textContent='Eine Sicherung wird angelegt, sobald vorhandene Daten bei einer späteren Änderung als älterer Stand gesichert werden können. Nutze „Export sichern“ für eine sofortige Sicherung.';return}
+ items.forEach((item,i)=>{const op=document.createElement('option');op.value=String(i);op.textContent=new Date(item.time).toLocaleString('de-DE')+' – '+(item.reason||'Sicherung');select.appendChild(op)});$('backuprestore').disabled=false;
+ const update=()=>{const item=items[Number(select.value)];if(!item){info.textContent='';return}try{const data=JSON.parse(item.data);const weeks=Object.keys(data).length;info.textContent='Sicherungsstand vom '+new Date(item.time).toLocaleString('de-DE')+'. Enthält '+weeks+' Wochenpläne. Beim Wiederherstellen wird der aktuelle Stand vorher gesichert.'}catch(e){info.textContent='Dieser Sicherungsstand kann nicht gelesen werden.'}};select.onchange=update;update();
+}
+$('backupmanage').onclick=()=>{renderBackupChoices();$('backupdialog').showModal()};
+$('backupclose').onclick=()=>$('backupdialog').close();
+$('backuprefresh').onclick=renderBackupChoices;
+$('backuprestore').onclick=()=>{const item=backupHistory()[Number($('backupselect').value)];if(!item){alert('Keine Sicherung ausgewählt.');return}try{const restored=JSON.parse(item.data);if(!restored||typeof restored!=='object'||Array.isArray(restored))throw Error('invalid');if(!confirm('Den ausgewählten Sicherungsstand wiederherstellen? Der aktuelle Stand wird vorher gesichert.'))return;const current=localStorage.getItem('meinWochenplanV2');if(current)saveBackupSnapshot(current,'Sicherung vor Wiederherstellung');all=restored;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();$('backupdialog').close();$('status').textContent='Sicherung wiederhergestellt · lokal auf diesem Gerät';}catch(e){alert('Diese Sicherung ist ungültig oder beschädigt.')}};
 // Reminder nur solange die App aktiv ist; kein garantierter Hintergrunddienst.
 checkReminder();setInterval(checkReminder,30000);
 </script>
