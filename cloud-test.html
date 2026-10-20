@@ -639,7 +639,7 @@ checkReminder();setInterval(checkReminder,30000);
 const SUPABASE_URL = 'https://pjtirgmwezubujuvnphq.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_10alv1-N067VKGQpujRuZw_uCztJekO';
 let cloudClient = null, cloudReady = false, cloudBusy = false, cloudApplying = false;
-let cloudSyncTimer = null, cloudHandledUser = null;
+let cloudSyncTimer = null, cloudHandledUser = null, cloudKnownUpdatedAt = null;
 function cloudStatus(msg, bad=false){ $('cloudstatus').textContent=msg; $('cloudstatus').style.color=bad?'#a43d37':'#647067'; }
 function cloudSetLoggedIn(session){
   const yes=!!session;
@@ -664,12 +664,32 @@ async function cloudUpload(silent=false){
   if(!user){if(!silent)cloudStatus('Bitte anmelden, um die Cloud-Sicherung zu nutzen.',true);return;}
   cloudBusy=true;
   try{
+    // Conflict guard: compare the cloud timestamp with the version last observed by this browser.
+    const {data:latest,error:readError}=await cloudClient.from('wochenplan_cloud')
+      .select('updated_at,plan_data').eq('user_id',user.id).maybeSingle();
+    if(readError)throw readError;
+    if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt){
+      cloudReady=false;
+      cloudStatus('Konflikt erkannt: Die Cloud wurde zwischenzeitlich geändert. Deine lokalen Änderungen bleiben erhalten. Bitte lade die Cloud-Version oder entscheide dich bewusst für die lokale Version.',true);
+      if(confirm('Die Cloud wurde seit dem letzten Abgleich geändert.\n\nOK = Cloud-Version laden (lokale Version wird vorher gesichert).\nAbbrechen = lokale Version behalten und die Cloud bewusst überschreiben.')){
+        const localRaw=cloudLocalJson();
+        if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor Konfliktauflösung');
+        cloudApplying=true;all=latest.plan_data||{};localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;
+        cloudKnownUpdatedAt=latest.updated_at;cloudReady=true;cloudStatus('Konflikt gelöst: Cloud-Version geladen.');
+        return;
+      }
+      // Re-read immediately before an explicit overwrite; still keep a local snapshot.
+      const localRaw=cloudLocalJson();
+      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor bewusstem Cloud-Überschreiben');
+    }
     const snapshot=JSON.parse(cloudLocalJson());
+    const savedAt=new Date().toISOString();
     const {error}=await cloudClient.from('wochenplan_cloud').upsert(
-      {user_id:user.id,plan_data:snapshot,updated_at:new Date().toISOString()},
+      {user_id:user.id,plan_data:snapshot,updated_at:savedAt},
       {onConflict:'user_id'}
     );
     if(error)throw error;
+    cloudKnownUpdatedAt=savedAt;cloudReady=true;
     if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Automatische Synchronisierung ist aktiv.');
     else cloudStatus('Automatisch in der Cloud gesichert.');
   }catch(e){cloudStatus('Cloud-Sicherung fehlgeschlagen: '+e.message,true)}
@@ -689,6 +709,7 @@ async function cloudInitialSync(userId){
     if(error)throw error;
     const localRaw=cloudLocalJson();
     if(!data){
+      cloudKnownUpdatedAt=null;
       cloudReady=true;
       if(cloudHasLocalData(all)){
         if(confirm('Für dieses Konto gibt es noch keine Cloud-Sicherung. Soll der Wochenplan dieses Geräts als erste Cloud-Sicherung gespeichert werden?')){
@@ -700,6 +721,7 @@ async function cloudInitialSync(userId){
     const remoteObj=data.plan_data;
     if(!remoteObj||typeof remoteObj!=='object'||Array.isArray(remoteObj))throw new Error('Die Cloud-Daten haben ein unerwartetes Format.');
     const remoteRaw=JSON.stringify(remoteObj);
+    cloudKnownUpdatedAt=data.updated_at;
     if(remoteRaw===localRaw){
       cloudReady=true;cloudStatus('Cloud und dieses Gerät sind aktuell.');
       return;
@@ -733,7 +755,7 @@ async function cloudInit(){
       // Defer database work until the auth callback has returned.
       setTimeout(()=>cloudInitialSync(session.user.id),0);
     }else{
-      cloudReady=false;cloudHandledUser=null;
+      cloudReady=false;cloudHandledUser=null;cloudKnownUpdatedAt=null;
       cloudStatus('Abgemeldet. Änderungen werden weiterhin lokal gespeichert.');
     }
   });
@@ -779,7 +801,7 @@ $('clouddownload').onclick=async()=>{
     if(!confirm('Die Cloud-Sicherung vom '+new Date(data.updated_at).toLocaleString('de-DE')+' mit '+Object.keys(data.plan_data).length+' Wochenplänen laden? Deine lokalen Daten werden vorher automatisch gesichert und danach ersetzt.'))return;
     const previous=localStorage.getItem('meinWochenplanV2');
     if(previous)saveBackupSnapshot(previous,'Sicherung vor Cloud-Wiederherstellung');
-    cloudApplying=true;all=data.plan_data;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;cloudReady=true;
+    cloudApplying=true;all=data.plan_data;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;cloudReady=true;cloudKnownUpdatedAt=data.updated_at;
     cloudStatus('Cloud-Sicherung geladen. Automatische Synchronisierung ist aktiv.');
     $('status').textContent='Cloud-Sicherung geladen · lokal auf diesem Gerät';
   }catch(e){cloudApplying=false;cloudStatus('Laden fehlgeschlagen: '+e.message,true)}
