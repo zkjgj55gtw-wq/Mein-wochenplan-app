@@ -1024,6 +1024,26 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 }
 </style>
 
+
+<style id="dark-daynote-contrast-fix">
+/* Tagesnotizen: im Dunkelmodus dieselbe ruhige dunkle Fläche wie das Wochenraster */
+:root[data-theme="dark"] .weekgrid .daynote-row td {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+:root[data-theme="dark"] .weekgrid .daynote-row .daynote {
+  background: var(--field) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+  -webkit-text-fill-color: var(--ink) !important;
+}
+:root[data-theme="dark"] .weekgrid .daynote-row .daynote::placeholder {
+  color: var(--muted) !important;
+  opacity: 1 !important;
+}
+</style>
+
 </head>
 <body>
 <header><div class="wrap headrow"><div><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div><button id="headerSignout" class="header-signout" hidden>Abmelden</button></div></header>
