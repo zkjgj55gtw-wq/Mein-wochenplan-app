@@ -1727,8 +1727,53 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_10alv1-N067VKGQpujRuZw_uCztJekO
 let cloudClient = null, cloudReady = false, cloudBusy = false, cloudApplying = false;
 let cloudSyncTimer = null, cloudHandledUser = null, cloudKnownUpdatedAt = null;
 function cloudStatus(msg, bad=false){ $('cloudstatus').textContent=msg; $('cloudstatus').style.color=bad?'#a43d37':'#647067'; }
+// Automatische Abmeldung nach 5 Minuten ohne Nutzeraktivität.
+const INACTIVITY_LIMIT_MS = 5 * 60 * 1000;
+const INACTIVITY_KEY = 'meinWochenplanLastActivity';
+let inactivityTimer = null;
+let inactivityActive = false;
+function recordUserActivity(){
+  if(!inactivityActive)return;
+  try{sessionStorage.setItem(INACTIVITY_KEY,String(Date.now()));}catch(e){}
+  scheduleInactivityLogout();
+}
+function stopInactivityLogout(){
+  inactivityActive=false;
+  if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
+  try{sessionStorage.removeItem(INACTIVITY_KEY);}catch(e){}
+}
+function scheduleInactivityLogout(){
+  if(!inactivityActive)return;
+  if(inactivityTimer)clearTimeout(inactivityTimer);
+  let last=Date.now();
+  try{last=Number(sessionStorage.getItem(INACTIVITY_KEY))||Date.now();}catch(e){}
+  const remaining=INACTIVITY_LIMIT_MS-(Date.now()-last);
+  if(remaining<=0){
+    inactivityTimer=setTimeout(()=>{if(inactivityActive)performCloudSignout(null);},0);
+  }else{
+    inactivityTimer=setTimeout(()=>{if(inactivityActive)performCloudSignout(null);},remaining);
+  }
+}
+function setInactivitySession(loggedIn){
+  if(!loggedIn){stopInactivityLogout();return;}
+  if(!inactivityActive){
+    inactivityActive=true;
+    try{sessionStorage.setItem(INACTIVITY_KEY,String(Date.now()));}catch(e){}
+  }
+  scheduleInactivityLogout();
+}
+// Display-off/background pauses can suspend timers on iPhone; check elapsed time on return.
+['pointerdown','keydown','touchstart','click','input','scroll'].forEach(type=>{
+  document.addEventListener(type,recordUserActivity,{passive:true,capture:true});
+});
+document.addEventListener('visibilitychange',()=>{
+  if(!inactivityActive)return;
+  if(document.visibilityState==='visible')scheduleInactivityLogout();
+});
+window.addEventListener('focus',()=>{if(inactivityActive)scheduleInactivityLogout();});
 function cloudSetLoggedIn(session){
   const yes=!!session;
+  setInactivitySession(yes);
   $('cloudactions').hidden=!yes;
   $('cloudlogin').querySelectorAll('input').forEach(el=>el.disabled=yes);
   $('cloudsignin').hidden=yes; $('cloudsignup').hidden=yes; const topLogout=$('headerSignout'); if(topLogout)topLogout.hidden=!yes; const legacyLogout=$('cloudsignout'); if(legacyLogout)legacyLogout.hidden=!yes;
