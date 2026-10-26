@@ -1779,6 +1779,12 @@ function cloudSetLoggedIn(session){
   $('cloudsignin').hidden=yes; $('cloudsignup').hidden=yes; const topLogout=$('headerSignout'); if(topLogout)topLogout.hidden=!yes; const legacyLogout=$('cloudsignout'); if(legacyLogout)legacyLogout.hidden=!yes;
 }
 function cloudLocalJson(){ return JSON.stringify(all||{}); }
+// Compare JSON data independent of object-key order; timestamps alone do not mean the plan changed.
+function cloudStableJson(value){
+  if(Array.isArray(value))return '['+value.map(cloudStableJson).join(',')+']';
+  if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+cloudStableJson(value[k])).join(',')+'}';
+  return JSON.stringify(value);
+}
 function cloudHasLocalData(obj){
   if(!obj||typeof obj!=='object')return false;
   return Object.values(obj).some(w=>w&&(w.note||'').trim() || Object.values(w?.cells||{}).some(c=>(c?.activity||'').trim() || (c?.mood!==''&&c?.mood!=null)));
@@ -1799,6 +1805,11 @@ async function cloudUpload(silent=false){
     const {data:latest,error:readError}=await cloudClient.from('wochenplan_cloud')
       .select('updated_at,plan_data').eq('user_id',user.id).maybeSingle();
     if(readError)throw readError;
+    if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt &&
+       cloudStableJson(latest.plan_data||{})===cloudStableJson(JSON.parse(cloudLocalJson()))){
+      // Another write may have updated the timestamp without changing the actual plan.
+      cloudKnownUpdatedAt=latest.updated_at;
+    }
     if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt){
       cloudReady=false;
       cloudStatus('Konflikt erkannt: Die Cloud wurde zwischenzeitlich geändert. Deine lokalen Änderungen bleiben erhalten. Bitte lade die Cloud-Version oder entscheide dich bewusst für die lokale Version.',true);
@@ -1815,12 +1826,13 @@ async function cloudUpload(silent=false){
     }
     const snapshot=JSON.parse(cloudLocalJson());
     const savedAt=new Date().toISOString();
-    const {error}=await cloudClient.from('wochenplan_cloud').upsert(
+    const {data:written,error}=await cloudClient.from('wochenplan_cloud').upsert(
       {user_id:user.id,plan_data:snapshot,updated_at:savedAt},
       {onConflict:'user_id'}
-    );
+    ).select('updated_at').single();
     if(error)throw error;
-    cloudKnownUpdatedAt=savedAt;cloudReady=true;
+    // Store the timestamp actually returned by Postgres, not the client-side guess.
+    cloudKnownUpdatedAt=written?.updated_at||savedAt;cloudReady=true;
     if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Automatische Synchronisierung ist aktiv.');
     else cloudStatus('Automatisch in der Cloud gesichert.');
   }catch(e){cloudStatus('Cloud-Sicherung fehlgeschlagen: '+e.message,true)}
