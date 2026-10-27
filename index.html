@@ -212,7 +212,7 @@ select:disabled, input:disabled, textarea:disabled { opacity: 1 !important; colo
 .hourday .activity{grid-column:1;min-height:28px;height:100%;max-height:72px;resize:vertical;border:1px solid var(--line);border-radius:7px;padding:5px;background:var(--field);color:var(--ink);font:12px Arial,sans-serif;opacity:1}
 .hourday .activity-first{grid-row:1}.hourday .activity-second{grid-row:2}
 .hourday .hour-mood{grid-column:2;grid-row:1 / span 2;width:34px;max-width:34px;min-width:0;align-self:stretch;border:1px solid var(--line);border-radius:8px;padding:4px 0;background:var(--field);color:var(--ink);font-size:16px;font-weight:700;text-align:center}
-.hourday .activity-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
+.hourday .activity.drag-source{outline:3px solid var(--accent)!important;opacity:.55!important}.hourday .activity.drag-target{outline:3px dashed var(--accent)!important;background:var(--soft)!important}.hourday .activity-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
 /* Dezente Stunden-Hinweise nur auf dem Bildschirm; Placeholder werden nicht gedruckt. */
 .hourday .activity::placeholder{color:var(--muted);opacity:.48;font-weight:500}
 @media print{.hourday .activity::placeholder{color:transparent!important;opacity:0!important}}
@@ -1080,7 +1080,7 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 <main>
   <div class="toolbar">
     <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
-    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button id="moveactivity" type="button" disabled>↔ Aktivität verschieben</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
+    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button id="moveactivity" type="button" disabled>↔ Verschieben (Alternative)</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
     <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
       <div class="menu-group"><div class="menu-heading">AUSWERTUNGEN</div><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button></div>
       <div class="menu-group"><div class="menu-heading">DRUCKEN</div><button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button></div>
@@ -1203,6 +1203,49 @@ function persist(message='Gespeichert'){
  if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
  localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';if(typeof scheduleCloudSync==='function')scheduleCloudSync();
 }
+// Eintrag per Gedrückthalten und Ziehen verschieben (iPhone und Desktop).
+let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragStartX=0, dragStartY=0, dragActive=false;
+function clearDragMarks(){document.querySelectorAll('.activity.drag-source,.activity.drag-target').forEach(el=>el.classList.remove('drag-source','drag-target'));}
+function finishActivityDrag(target){
+ const source=dragSource; if(!source||!target||source===target||!source.value.trim())return;
+ const sourceDate=source.dataset.datekey, sourceKey=source.dataset.cellkey;
+ const targetDate=target.dataset.datekey, targetKey=target.dataset.cellkey;
+ const sourceDay=all[sourceDate], sourceCell=sourceDay?.cells?.[sourceKey];
+ if(!sourceCell||!(sourceCell.activity||'').trim()){alert('Der Eintrag hat sich inzwischen geändert. Bitte erneut versuchen.');return;}
+ const targetDay=all[targetDate]||(all[targetDate]={cells:{},note:''});if(!targetDay.cells)targetDay.cells={};
+ const targetCell=targetDay.cells[targetKey]||{};
+ if((targetCell.activity||'').trim()&&!confirm('Am Ziel steht bereits ein Eintrag. Soll er ersetzt werden?'))return;
+ targetDay.cells[targetKey]={...targetCell,activity:sourceCell.activity};
+ sourceDay.cells[sourceKey]={...sourceCell,activity:''};
+ persist('Aktivität verschoben');render();
+}
+function installActivityDrag(field){
+ field.addEventListener('pointerdown',e=>{
+  if(e.button!==undefined&&e.button!==0)return;
+  if(!field.value.trim())return;
+  dragCandidate=field;dragStartX=e.clientX;dragStartY=e.clientY;
+  clearTimeout(dragTimer);dragTimer=setTimeout(()=>{
+   if(!dragCandidate||dragCandidate!==field)return;
+   dragActive=true;dragSource=field;field.classList.add('drag-source');
+   if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
+  },500);
+ });
+ field.addEventListener('pointermove',e=>{
+  if(!dragActive&&dragCandidate===field&&Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>12) {clearTimeout(dragTimer);dragCandidate=null;}
+  if(!dragActive)return;
+  if(e.pointerType==='touch')e.preventDefault();
+  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.hourday .activity');
+  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');
+  dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
+ });
+ const stop=()=>{
+  clearTimeout(dragTimer);
+  if(dragActive){const target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target);}
+  else{dragCandidate=null;}
+ };
+ field.addEventListener('pointerup',stop);field.addEventListener('pointercancel',stop);field.addEventListener('pointerleave',e=>{if(!dragActive&&e.pointerType==='mouse'){clearTimeout(dragTimer);dragCandidate=null;}});
+ field.addEventListener('contextmenu',e=>{if(dragActive)e.preventDefault()});
+}
 function render(){
  $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
  const h=$('headrow');h.innerHTML='<th>Zeit</th>';
@@ -1221,7 +1264,7 @@ function render(){
    const mood=document.createElement('select');mood.className='mood hour-mood';mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
    const saveActivity=(which)=>()=>{const target=which==='first'?hourId:halfId;const old=current().cells[target]||{};current().cells[target]={...old,activity:which==='first'?first.value:second.value};persist();updateContinuationClasses()};
    first.addEventListener('input',()=>{saveActivity('first')();if(selectedActivityField===first)$('moveactivity').disabled=!first.value.trim()});second.addEventListener('input',()=>{saveActivity('second')();if(selectedActivityField===second)$('moveactivity').disabled=!second.value.trim()});
-   for(const field of [first,second])field.addEventListener('focus',()=>{selectedActivityField=field;$('moveactivity').disabled=!field.value.trim();});
+   for(const field of [first,second]){field.addEventListener('focus',()=>{selectedActivityField=field;$('moveactivity').disabled=!field.value.trim();});installActivityDrag(field);}
    mood.addEventListener('change',()=>{const old=current().cells[hourId]||{};current().cells[hourId]={...old,mood:mood.value};persist();updateContinuationClasses()});
    layout.append(first,second,mood);td.appendChild(layout);tr.appendChild(td);
   });body.appendChild(tr);
