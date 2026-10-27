@@ -1080,7 +1080,7 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 <main>
   <div class="toolbar">
     <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
-    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button id="moveactivity" type="button" disabled>↔ Verschieben (Alternative)</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
+    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
     <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
       <div class="menu-group"><div class="menu-heading">AUSWERTUNGEN</div><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button></div>
       <div class="menu-group"><div class="menu-heading">DRUCKEN</div><button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button></div>
@@ -1211,39 +1211,65 @@ function finishActivityDrag(target){
  const sourceDate=source.dataset.datekey, sourceKey=source.dataset.cellkey;
  const targetDate=target.dataset.datekey, targetKey=target.dataset.cellkey;
  const sourceDay=all[sourceDate], sourceCell=sourceDay?.cells?.[sourceKey];
- if(!sourceCell||!(sourceCell.activity||'').trim()){alert('Der Eintrag hat sich inzwischen geändert. Bitte erneut versuchen.');return;}
+ const liveActivity=(source.value||'').trim();
+ if(!sourceDay||!sourceCell||!liveActivity){alert('Der Eintrag hat sich inzwischen geändert. Bitte erneut versuchen.');return;}
  const targetDay=all[targetDate]||(all[targetDate]={cells:{},note:''});if(!targetDay.cells)targetDay.cells={};
  const targetCell=targetDay.cells[targetKey]||{};
  if((targetCell.activity||'').trim()&&!confirm('Am Ziel steht bereits ein Eintrag. Soll er ersetzt werden?'))return;
- targetDay.cells[targetKey]={...targetCell,activity:sourceCell.activity};
+ targetDay.cells[targetKey]={...targetCell,activity:liveActivity};
  sourceDay.cells[sourceKey]={...sourceCell,activity:''};
  persist('Aktivität verschoben');render();
 }
 function installActivityDrag(field){
- field.addEventListener('pointerdown',e=>{
-  if(e.button!==undefined&&e.button!==0)return;
+ // Touch dragging is handled separately from textarea text selection. A long press
+ // starts moving the whole activity; touchmove is prevented only after drag starts.
+ let localTimer=null, localCandidate=false, localActive=false, startX=0, startY=0, localTarget=null;
+ const markTarget=(x,y)=>{
+  const hit=document.elementFromPoint(x,y)?.closest('.hourday .activity');
+  if(localTarget&&localTarget!==hit)localTarget.classList.remove('drag-target');
+  localTarget=hit&&hit!==field?hit:null;
+  if(localTarget)localTarget.classList.add('drag-target');
+ };
+ const startDrag=()=>{
+  if(!localCandidate||!field.value.trim())return;
+  localActive=true;dragActive=true;dragSource=field;field.classList.add('drag-source');
+  if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
+ };
+ field.addEventListener('touchstart',e=>{
   if(!field.value.trim())return;
+  const t=e.touches[0];startX=t.clientX;startY=t.clientY;localCandidate=true;
+  clearTimeout(localTimer);localTimer=setTimeout(startDrag,550);
+ },{passive:true});
+ field.addEventListener('touchmove',e=>{
+  if(!localActive){
+   const t=e.touches[0];if(Math.hypot(t.clientX-startX,t.clientY-startY)>14){clearTimeout(localTimer);localCandidate=false;}
+   return;
+  }
+  e.preventDefault();const t=e.touches[0];markTarget(t.clientX,t.clientY);
+ },{passive:false});
+ const endTouch=e=>{
+  clearTimeout(localTimer);
+  if(localActive){if(e.cancelable)e.preventDefault();const target=localTarget;clearDragMarks();localActive=false;dragActive=false;dragSource=null;localTarget=null;dragTarget=null;localCandidate=false;if(target)finishActivityDrag(target);}
+  else localCandidate=false;
+ };
+ field.addEventListener('touchend',endTouch,{passive:false});
+ field.addEventListener('touchcancel',endTouch,{passive:false});
+ // Desktop mouse/pointer fallback.
+ field.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch'||(e.button!==undefined&&e.button!==0)||!field.value.trim())return;
   dragCandidate=field;dragStartX=e.clientX;dragStartY=e.clientY;
-  clearTimeout(dragTimer);dragTimer=setTimeout(()=>{
-   if(!dragCandidate||dragCandidate!==field)return;
-   dragActive=true;dragSource=field;field.classList.add('drag-source');
-   if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
-  },500);
+  clearTimeout(dragTimer);dragTimer=setTimeout(()=>{if(dragCandidate!==field)return;dragActive=true;dragSource=field;field.classList.add('drag-source');},500);
  });
  field.addEventListener('pointermove',e=>{
-  if(!dragActive&&dragCandidate===field&&Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>12) {clearTimeout(dragTimer);dragCandidate=null;}
-  if(!dragActive)return;
-  if(e.pointerType==='touch')e.preventDefault();
+  if(e.pointerType==='touch')return;
+  if(!dragActive&&dragCandidate===field&&Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>12){clearTimeout(dragTimer);dragCandidate=null;}
+  if(!dragActive||dragSource!==field)return;
   const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.hourday .activity');
-  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');
-  dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
+  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');dragTarget=hit&&hit!==field?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
  });
- const stop=()=>{
-  clearTimeout(dragTimer);
-  if(dragActive){const target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target);}
-  else{dragCandidate=null;}
- };
- field.addEventListener('pointerup',stop);field.addEventListener('pointercancel',stop);field.addEventListener('pointerleave',e=>{if(!dragActive&&e.pointerType==='mouse'){clearTimeout(dragTimer);dragCandidate=null;}});
+ const stopPointer=()=>{clearTimeout(dragTimer);if(dragActive&&dragSource===field){const target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target);}else dragCandidate=null;};
+ field.addEventListener('pointerup',stopPointer);field.addEventListener('pointercancel',stopPointer);
+ field.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&!dragActive){clearTimeout(dragTimer);dragCandidate=null;}});
  field.addEventListener('contextmenu',e=>{if(dragActive)e.preventDefault()});
 }
 function render(){
@@ -1263,8 +1289,8 @@ function render(){
    const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.dataset.datekey=dateKey;second.dataset.cellkey=halfId;second.dataset.day=day;second.dataset.time=String(hour).padStart(2,'0')+':30';second.placeholder=String(hour).padStart(2,'0')+':30';second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
    const mood=document.createElement('select');mood.className='mood hour-mood';mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
    const saveActivity=(which)=>()=>{const target=which==='first'?hourId:halfId;const old=current().cells[target]||{};current().cells[target]={...old,activity:which==='first'?first.value:second.value};persist();updateContinuationClasses()};
-   first.addEventListener('input',()=>{saveActivity('first')();if(selectedActivityField===first)$('moveactivity').disabled=!first.value.trim()});second.addEventListener('input',()=>{saveActivity('second')();if(selectedActivityField===second)$('moveactivity').disabled=!second.value.trim()});
-   for(const field of [first,second]){field.addEventListener('focus',()=>{selectedActivityField=field;$('moveactivity').disabled=!field.value.trim();});installActivityDrag(field);}
+   first.addEventListener('input',()=>{saveActivity('first')();});second.addEventListener('input',()=>{saveActivity('second')();});
+   for(const field of [first,second]){field.addEventListener('focus',()=>{selectedActivityField=field;});installActivityDrag(field);}
    mood.addEventListener('change',()=>{const old=current().cells[hourId]||{};current().cells[hourId]={...old,mood:mood.value};persist();updateContinuationClasses()});
    layout.append(first,second,mood);td.appendChild(layout);tr.appendChild(td);
   });body.appendChild(tr);
@@ -1274,29 +1300,6 @@ function render(){
  $('weeknote').value=current().note||'';updateContinuationClasses();
 }
 let selectedActivityField=null;
-$('moveactivity').addEventListener('click',()=>{
- const field=selectedActivityField;
- if(!field||!field.value.trim()){alert('Tippe zuerst in das Aktivitätsfeld, das du verschieben möchtest.');return;}
- const currentDate=field.dataset.datekey, currentTime=field.dataset.time;
- const destination=prompt('Ziel für diese Aktivität eingeben: Datum und Uhrzeit im Format JJJJ-MM-TT HH:MM.\nErlaubt sind volle Stunden oder halbe Stunden (z. B. 2026-10-28 14:30).\nAktuell: '+currentDate+' '+currentTime, currentDate+' '+currentTime);
- if(destination===null)return;
- const match=destination.trim().match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}):(00|30)$/);
- if(!match){alert('Bitte Datum und Uhrzeit so eingeben: 2026-10-28 14:30.');return;}
- const [,dateKey,time,hminutes]=match;const hh=Number(time);
- if(hh>23){alert('Die Stunde muss zwischen 00 und 23 liegen.');return;}
- const parsedDate=new Date(dateKey+'T12:00:00');if(isNaN(parsedDate)||key(parsedDate)!==dateKey){alert('Bitte ein gültiges Datum eingeben.');return;}
- const destKey=dateKey+'_'+hh+(hminutes==='30'?'_30':'');
- if(dateKey===currentDate&&destKey===field.dataset.cellkey){alert('Das ist bereits der aktuelle Platz.');return;}
- const sourceDay=all[currentDate];if(!sourceDay||!sourceDay.cells){alert('Der ursprüngliche Eintrag wurde nicht gefunden.');return;}
- const source=sourceDay.cells[field.dataset.cellkey];if(!source||!(source.activity||'').trim()){alert('In diesem Feld steht keine Aktivität mehr.');return;}
- const targetDay=all[dateKey]||(all[dateKey]={cells:{},note:''});
- if(!targetDay.cells)targetDay.cells={};
- const target=targetDay.cells[destKey]||{};
- if((target.activity||'').trim()&&!confirm('Am Ziel steht bereits eine Aktivität. Soll sie durch den verschobenen Eintrag ersetzt werden?'))return;
- targetDay.cells[destKey]={...target,activity:source.activity};
- sourceDay.cells[field.dataset.cellkey]={...source,activity:''};
- persist('Aktivität verschoben');render();
-});
 function updateContinuationClasses(){
  const rows=[...document.querySelectorAll('#body tr.hourrow')];
  for(let d=1;d<=7;d++){
