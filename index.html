@@ -1208,16 +1208,17 @@ let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragSt
 function clearDragMarks(){document.querySelectorAll('.activity.drag-source,.activity.drag-target').forEach(el=>el.classList.remove('drag-source','drag-target'));}
 function finishActivityDrag(target, sourceOverride=null){
  const source=sourceOverride||dragSource; if(!source||!target||source===target||!source.value.trim())return;
- const sourceDate=source.dataset.datekey, sourceKey=source.dataset.cellkey;
- const targetDate=target.dataset.datekey, targetKey=target.dataset.cellkey;
- const sourceDay=all[sourceDate], sourceCell=sourceDay?.cells?.[sourceKey];
+ const sourceKey=source.dataset.cellkey, targetKey=target.dataset.cellkey;
+ // All activity cells for the visible week are stored under the week's anchor key,
+ // not under each individual date. Keep both cells in that same week object.
+ const weekData=all[key(anchor)];
+ const sourceCell=weekData?.cells?.[sourceKey];
  const liveActivity=(source.value||'').trim();
- if(!sourceDay||!sourceCell||!liveActivity){alert('Der Eintrag hat sich inzwischen geändert. Bitte erneut versuchen.');return;}
- const targetDay=all[targetDate]||(all[targetDate]={cells:{},note:''});if(!targetDay.cells)targetDay.cells={};
- const targetCell=targetDay.cells[targetKey]||{};
+ if(!weekData||!sourceCell||!liveActivity){alert('Der Eintrag konnte nicht gefunden werden. Bitte erneut versuchen.');return;}
+ const targetCell=weekData.cells[targetKey]||{};
  if((targetCell.activity||'').trim()&&!confirm('Am Ziel steht bereits ein Eintrag. Soll er ersetzt werden?'))return;
- targetDay.cells[targetKey]={...targetCell,activity:liveActivity};
- sourceDay.cells[sourceKey]={...sourceCell,activity:''};
+ weekData.cells[targetKey]={...targetCell,activity:liveActivity};
+ weekData.cells[sourceKey]={...sourceCell,activity:''};
  persist('Aktivität verschoben');render();
 }
 function installActivityDrag(field){
@@ -1252,8 +1253,9 @@ function installActivityDrag(field){
   if(localActive){if(e.cancelable)e.preventDefault();const target=localTarget;const source=dragSource;clearDragMarks();localActive=false;dragActive=false;dragSource=null;localTarget=null;dragTarget=null;localCandidate=false;if(target)finishActivityDrag(target,source);}
   else localCandidate=false;
  };
- field.addEventListener('touchend',endTouch,{passive:false});
- field.addEventListener('touchcancel',endTouch,{passive:false});
+ // Listen on document too: on iOS the touch may end on the target textarea, not source.
+ document.addEventListener('touchend',endTouch,{passive:false});
+ document.addEventListener('touchcancel',endTouch,{passive:false});
  // Desktop mouse/pointer fallback.
  field.addEventListener('pointerdown',e=>{
   if(e.pointerType==='touch'||(e.button!==undefined&&e.button!==0)||!field.value.trim())return;
