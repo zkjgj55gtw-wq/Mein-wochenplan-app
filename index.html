@@ -213,6 +213,9 @@ select:disabled, input:disabled, textarea:disabled { opacity: 1 !important; colo
 .hourday .activity-first{grid-row:1}.hourday .activity-second{grid-row:2}
 .hourday .hour-mood{grid-column:2;grid-row:1 / span 2;width:34px;max-width:34px;min-width:0;align-self:stretch;border:1px solid var(--line);border-radius:8px;padding:4px 0;background:var(--field);color:var(--ink);font-size:16px;font-weight:700;text-align:center}
 .hourday .activity-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
+/* Dezente Stunden-Hinweise nur auf dem Bildschirm; Placeholder werden nicht gedruckt. */
+.hourday .activity::placeholder{color:var(--muted);opacity:.48;font-weight:500}
+@media print{.hourday .activity::placeholder{color:transparent!important;opacity:0!important}}
 .hourday .mood-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
 @media(max-width:650px){.weekgrid{min-width:1580px}.hourrow .hour-time{width:78px;min-width:78px}.hourday{grid-template-columns:minmax(110px,1fr) 34px;min-height:59px}.hourday .activity{font-size:12px}}
 @media print{.hourday{min-height:38px;grid-template-rows:18px 18px;gap:1px}.hourrow .hour-time{font-size:8px}.hour-time small{font-size:7px}.hourday .activity{min-height:17px;font-size:7px;padding:1px}.hourday .hour-mood{font-size:7px;padding:0}}
@@ -1077,7 +1080,7 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 <main>
   <div class="toolbar">
     <div class="navgroup"><button id="prev">← Woche</button><button id="next">Woche →</button><div class="weektitle" id="weektitle"></div></div>
-    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
+    <div class="navgroup"><label for="jumpdate">Zum Datum:</label><input type="date" id="jumpdate" aria-label="Zum Datum springen"><button id="searchopen">🔎 Suchen</button><button id="moveactivity" type="button" disabled>↔ Aktivität verschieben</button><button class="voice" id="voiceopen">🎙 Diktieren</button></div>
     <details class="moremenu" id="moremenu"><summary>Weitere Funktionen ▾</summary><div class="menuitems">
       <div class="menu-group"><div class="menu-heading">AUSWERTUNGEN</div><button id="moodcurve">Stimmungskurve</button><button id="moodreport">Stimmungsauswertung</button><button id="moodcalendar">Stimmungskalender</button><button id="compareperiods">Zeiträume vergleichen</button><button id="weeksum">Wochenzusammenfassung</button></div>
       <div class="menu-group"><div class="menu-heading">DRUCKEN</div><button class="primary" id="print">Drucken / als PDF</button><button id="rangeprint">PDF-Zeitraum</button></div>
@@ -1213,11 +1216,12 @@ function render(){
    const hourly=current().cells[hourId]||{}, half=current().cells[halfId]||{};
    const td=document.createElement('td');td.className='hour-slot';
    const layout=document.createElement('div');layout.className='hourday';layout.dataset.dayindex=String(i+1);
-   const first=document.createElement('textarea');first.className='activity activity-first';first.rows=1;first.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String(hour).padStart(2,'0')+':30, Aktivität');first.value=hourly.activity||'';first.title=first.value||'Aktivität eintragen';
-   const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
+   const first=document.createElement('textarea');first.className='activity activity-first';first.rows=1;first.dataset.datekey=dateKey;first.dataset.cellkey=hourId;first.dataset.day=day;first.dataset.time=String(hour).padStart(2,'0')+':00';first.placeholder=String(hour).padStart(2,'0')+':00';first.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String(hour).padStart(2,'0')+':30, Aktivität');first.value=hourly.activity||'';first.title=first.value||'Aktivität eintragen';
+   const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.dataset.datekey=dateKey;second.dataset.cellkey=halfId;second.dataset.day=day;second.dataset.time=String(hour).padStart(2,'0')+':30';second.placeholder=String(hour).padStart(2,'0')+':30';second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
    const mood=document.createElement('select');mood.className='mood hour-mood';mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
    const saveActivity=(which)=>()=>{const target=which==='first'?hourId:halfId;const old=current().cells[target]||{};current().cells[target]={...old,activity:which==='first'?first.value:second.value};persist();updateContinuationClasses()};
-   first.addEventListener('input',saveActivity('first'));second.addEventListener('input',saveActivity('second'));
+   first.addEventListener('input',()=>{saveActivity('first')();if(selectedActivityField===first)$('moveactivity').disabled=!first.value.trim()});second.addEventListener('input',()=>{saveActivity('second')();if(selectedActivityField===second)$('moveactivity').disabled=!second.value.trim()});
+   for(const field of [first,second])field.addEventListener('focus',()=>{selectedActivityField=field;$('moveactivity').disabled=!field.value.trim();});
    mood.addEventListener('change',()=>{const old=current().cells[hourId]||{};current().cells[hourId]={...old,mood:mood.value};persist();updateContinuationClasses()});
    layout.append(first,second,mood);td.appendChild(layout);tr.appendChild(td);
   });body.appendChild(tr);
@@ -1226,6 +1230,30 @@ function render(){
  DAYS.forEach((day,i)=>{const d=new Date(anchor);d.setDate(d.getDate()+i);const td=document.createElement('td');const input=document.createElement('textarea');input.className='daynote';input.rows=1;input.placeholder='Tagesnotiz …';input.setAttribute('aria-label',day+', Tagesnotiz');input.value=(current().dayNotes||{})[key(d)]||'';input.addEventListener('input',()=>{if(!current().dayNotes)current().dayNotes={};current().dayNotes[key(d)]=input.value;persist()});td.appendChild(input);noteRow.appendChild(td)});body.appendChild(noteRow);
  $('weeknote').value=current().note||'';updateContinuationClasses();
 }
+let selectedActivityField=null;
+$('moveactivity').addEventListener('click',()=>{
+ const field=selectedActivityField;
+ if(!field||!field.value.trim()){alert('Tippe zuerst in das Aktivitätsfeld, das du verschieben möchtest.');return;}
+ const currentDate=field.dataset.datekey, currentTime=field.dataset.time;
+ const destination=prompt('Ziel für diese Aktivität eingeben: Datum und Uhrzeit im Format JJJJ-MM-TT HH:MM.\nErlaubt sind volle Stunden oder halbe Stunden (z. B. 2026-10-28 14:30).\nAktuell: '+currentDate+' '+currentTime, currentDate+' '+currentTime);
+ if(destination===null)return;
+ const match=destination.trim().match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}):(00|30)$/);
+ if(!match){alert('Bitte Datum und Uhrzeit so eingeben: 2026-10-28 14:30.');return;}
+ const [,dateKey,time,hminutes]=match;const hh=Number(time);
+ if(hh>23){alert('Die Stunde muss zwischen 00 und 23 liegen.');return;}
+ const parsedDate=new Date(dateKey+'T12:00:00');if(isNaN(parsedDate)||key(parsedDate)!==dateKey){alert('Bitte ein gültiges Datum eingeben.');return;}
+ const destKey=dateKey+'_'+hh+(hminutes==='30'?'_30':'');
+ if(dateKey===currentDate&&destKey===field.dataset.cellkey){alert('Das ist bereits der aktuelle Platz.');return;}
+ const sourceDay=all[currentDate];if(!sourceDay||!sourceDay.cells){alert('Der ursprüngliche Eintrag wurde nicht gefunden.');return;}
+ const source=sourceDay.cells[field.dataset.cellkey];if(!source||!(source.activity||'').trim()){alert('In diesem Feld steht keine Aktivität mehr.');return;}
+ const targetDay=all[dateKey]||(all[dateKey]={cells:{},note:''});
+ if(!targetDay.cells)targetDay.cells={};
+ const target=targetDay.cells[destKey]||{};
+ if((target.activity||'').trim()&&!confirm('Am Ziel steht bereits eine Aktivität. Soll sie durch den verschobenen Eintrag ersetzt werden?'))return;
+ targetDay.cells[destKey]={...target,activity:source.activity};
+ sourceDay.cells[field.dataset.cellkey]={...source,activity:''};
+ persist('Aktivität verschoben');render();
+});
 function updateContinuationClasses(){
  const rows=[...document.querySelectorAll('#body tr.hourrow')];
  for(let d=1;d<=7;d++){
