@@ -1203,77 +1203,75 @@ function persist(message='Gespeichert'){
  if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
  localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';if(typeof scheduleCloudSync==='function')scheduleCloudSync();
 }
-// Eintrag per Gedrückthalten und Ziehen verschieben (iPhone und Desktop).
-let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragStartX=0, dragStartY=0, dragActive=false;
+// Aktivität per langem Drücken verschieben – mit zentralem Touch-Handling für iOS.
+let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragActive=false;
+let dragTouchId=null, dragStartX=0, dragStartY=0;
 function clearDragMarks(){document.querySelectorAll('.activity.drag-source,.activity.drag-target').forEach(el=>el.classList.remove('drag-source','drag-target'));}
-function finishActivityDrag(target, sourceOverride=null){
- const source=sourceOverride||dragSource; if(!source||!target||source===target||!source.value.trim())return;
- const sourceKey=source.dataset.cellkey, targetKey=target.dataset.cellkey;
- // All activity cells for the visible week are stored under the week's anchor key,
- // not under each individual date. Keep both cells in that same week object.
- const weekData=all[key(anchor)];
- const sourceCell=weekData?.cells?.[sourceKey];
+function finishActivityDrag(target, source){
+ if(!source||!target||source===target)return;
  const liveActivity=(source.value||'').trim();
- if(!weekData||!sourceCell||!liveActivity){alert('Der Eintrag konnte nicht gefunden werden. Bitte erneut versuchen.');return;}
+ if(!liveActivity)return;
+ // Use the live weekly object instead of reconstructing or looking up a stale week reference.
+ const weekData=current(); if(!weekData.cells)weekData.cells={};
+ const sourceKey=source.dataset.cellkey, targetKey=target.dataset.cellkey;
+ const sourceCell=weekData.cells[sourceKey];
+ if(!sourceKey||!targetKey||!sourceCell){alert('Der Eintrag konnte nicht gefunden werden. Bitte zuerst den Text im Feld antippen und danach erneut ziehen.');return;}
  const targetCell=weekData.cells[targetKey]||{};
  if((targetCell.activity||'').trim()&&!confirm('Am Ziel steht bereits ein Eintrag. Soll er ersetzt werden?'))return;
+ // Move the entire activity string, preserving any other properties in both cells.
  weekData.cells[targetKey]={...targetCell,activity:liveActivity};
  weekData.cells[sourceKey]={...sourceCell,activity:''};
  persist('Aktivität verschoben');render();
 }
 function installActivityDrag(field){
- // Touch dragging is handled separately from textarea text selection. A long press
- // starts moving the whole activity; touchmove is prevented only after drag starts.
- let localTimer=null, localCandidate=false, localActive=false, startX=0, startY=0, localTarget=null;
- const markTarget=(x,y)=>{
-  const hit=document.elementFromPoint(x,y)?.closest('.hourday .activity');
-  if(localTarget&&localTarget!==hit)localTarget.classList.remove('drag-target');
-  localTarget=hit&&hit!==field?hit:null;
-  if(localTarget)localTarget.classList.add('drag-target');
- };
- const startDrag=()=>{
-  if(!localCandidate||!field.value.trim())return;
-  localActive=true;dragActive=true;dragSource=field;field.classList.add('drag-source');
-  if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
- };
+ field.style.touchAction='none';
+ field.style.webkitUserSelect='none';
+ field.style.userSelect='none';
+ field.addEventListener('contextmenu',e=>{if(dragActive)e.preventDefault();});
+ field.addEventListener('dragstart',e=>e.preventDefault());
  field.addEventListener('touchstart',e=>{
-  if(!field.value.trim())return;
-  const t=e.touches[0];startX=t.clientX;startY=t.clientY;localCandidate=true;
-  clearTimeout(localTimer);localTimer=setTimeout(startDrag,550);
+  if(!field.value.trim()||e.touches.length!==1)return;
+  const t=e.touches[0];dragCandidate=field;dragStartX=t.clientX;dragStartY=t.clientY;dragTouchId=t.identifier;
+  clearTimeout(dragTimer);
+  dragTimer=setTimeout(()=>{
+   if(dragCandidate!==field)return;
+   dragSource=field;dragActive=true;field.classList.add('drag-source');
+   if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
+  },500);
  },{passive:true});
  field.addEventListener('touchmove',e=>{
-  if(!localActive){
-   const t=e.touches[0];if(Math.hypot(t.clientX-startX,t.clientY-startY)>14){clearTimeout(localTimer);localCandidate=false;}
-   return;
-  }
-  e.preventDefault();const t=e.touches[0];markTarget(t.clientX,t.clientY);
+  const t=[...e.touches].find(x=>x.identifier===dragTouchId);if(!t)return;
+  if(!dragActive){if(Math.hypot(t.clientX-dragStartX,t.clientY-dragStartY)>12){clearTimeout(dragTimer);dragCandidate=null;}return;}
+  e.preventDefault();
+  const hit=document.elementFromPoint(t.clientX,t.clientY)?.closest('.hourday .activity');
+  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');
+  dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
  },{passive:false});
- const endTouch=e=>{
-  clearTimeout(localTimer);
-  if(localActive){if(e.cancelable)e.preventDefault();const target=localTarget;const source=dragSource;clearDragMarks();localActive=false;dragActive=false;dragSource=null;localTarget=null;dragTarget=null;localCandidate=false;if(target)finishActivityDrag(target,source);}
-  else localCandidate=false;
- };
- // Listen on document too: on iOS the touch may end on the target textarea, not source.
- document.addEventListener('touchend',endTouch,{passive:false});
- document.addEventListener('touchcancel',endTouch,{passive:false});
- // Desktop mouse/pointer fallback.
- field.addEventListener('pointerdown',e=>{
-  if(e.pointerType==='touch'||(e.button!==undefined&&e.button!==0)||!field.value.trim())return;
-  dragCandidate=field;dragStartX=e.clientX;dragStartY=e.clientY;
-  clearTimeout(dragTimer);dragTimer=setTimeout(()=>{if(dragCandidate!==field)return;dragActive=true;dragSource=field;field.classList.add('drag-source');},500);
- });
- field.addEventListener('pointermove',e=>{
-  if(e.pointerType==='touch')return;
-  if(!dragActive&&dragCandidate===field&&Math.hypot(e.clientX-dragStartX,e.clientY-dragStartY)>12){clearTimeout(dragTimer);dragCandidate=null;}
-  if(!dragActive||dragSource!==field)return;
-  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.hourday .activity');
-  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');dragTarget=hit&&hit!==field?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
- });
- const stopPointer=()=>{clearTimeout(dragTimer);if(dragActive&&dragSource===field){const target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target);}else dragCandidate=null;};
- field.addEventListener('pointerup',stopPointer);field.addEventListener('pointercancel',stopPointer);
- field.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch'&&!dragActive){clearTimeout(dragTimer);dragCandidate=null;}});
- field.addEventListener('contextmenu',e=>{if(dragActive)e.preventDefault()});
 }
+function endActivityDrag(e){
+ if(e.type==='touchend'&&dragTouchId!==null&&!([...e.changedTouches].some(t=>t.identifier===dragTouchId)))return;
+ clearTimeout(dragTimer);
+ if(dragActive){if(e.cancelable)e.preventDefault();const source=dragSource,target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;dragTouchId=null;if(target)finishActivityDrag(target,source);}
+ else {dragCandidate=null;dragTouchId=null;}
+}
+document.addEventListener('touchend',endActivityDrag,{passive:false});
+document.addEventListener('touchcancel',endActivityDrag,{passive:false});
+document.addEventListener('pointerup',e=>{
+ if(e.pointerType==='touch'||!dragActive)return;
+ const source=dragSource,target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target,source);
+});
+document.addEventListener('pointermove',e=>{
+ if(e.pointerType==='touch'||!dragActive||!dragSource)return;
+ const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.hourday .activity');
+ if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
+});
+document.addEventListener('pointerdown',e=>{
+ if(e.pointerType==='touch'||e.button!==0)return;
+ const field=e.target.closest?.('.hourday .activity');if(!field||!field.value.trim())return;
+ dragCandidate=field;dragStartX=e.clientX;dragStartY=e.clientY;clearTimeout(dragTimer);
+ dragTimer=setTimeout(()=>{if(dragCandidate===field){dragSource=field;dragActive=true;field.classList.add('drag-source');}},500);
+});
+
 function render(){
  $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
  const h=$('headrow');h.innerHTML='<th>Zeit</th>';
