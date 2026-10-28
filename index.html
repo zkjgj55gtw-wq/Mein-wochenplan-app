@@ -1047,6 +1047,49 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 }
 </style>
 
+
+<style id="print-layout-match-current-ui">
+/* Druck/PDF an das aktuelle Stundenraster anpassen: links Stunden, zwei Aktivitätszeilen, Stimmung rechts. */
+@media print {
+  @page { size: A4 landscape; margin: 5mm; }
+  body.simple-week-print { background:#fff !important; color:#111 !important; font-size:8px !important; }
+  body.simple-week-print > header { padding:0 0 4px !important; margin:0 !important; background:#fff !important; color:#111 !important; }
+  body.simple-week-print > header h1 { font-size:15px !important; margin:0 0 2px !important; }
+  body.simple-week-print > header p { color:#333 !important; font-size:8px !important; margin:0 !important; }
+  body.simple-week-print > main { padding:0 !important; margin:0 !important; max-width:none !important; }
+  body.simple-week-print .printtitle { font-size:8px !important; margin:0 0 3px !important; }
+  body.simple-week-print .gridwrap { overflow:visible !important; margin:0 !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; }
+  body.simple-week-print .weekgrid { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
+  body.simple-week-print .weekgrid th, body.simple-week-print .weekgrid td { padding:1px !important; }
+  body.simple-week-print .weekgrid thead th { padding:3px 1px !important; font-size:8px !important; height:19px !important; background:#eee !important; color:#111 !important; }
+  body.simple-week-print .weekgrid thead th:first-child, body.simple-week-print .hour-time { width:38px !important; min-width:38px !important; }
+  body.simple-week-print .weekgrid tbody tr.hourrow { height:27px !important; }
+  body.simple-week-print .weekgrid tbody tr.hourrow > th, body.simple-week-print .weekgrid tbody tr.hourrow > td { height:27px !important; padding:0 !important; }
+  body.simple-week-print .hour-time { font-size:7px !important; line-height:1.1 !important; padding:1px !important; background:#f5f5f5 !important; color:#111 !important; }
+  body.simple-week-print .hour-time small { display:block !important; font-size:6px !important; margin-top:1px !important; }
+  body.simple-week-print .hourday { display:grid !important; grid-template-columns:minmax(0,1fr) 18px !important; grid-template-rows:13px 13px !important; gap:0 !important; min-height:26px !important; height:26px !important; }
+  body.simple-week-print .hourday .activity { display:block !important; box-sizing:border-box !important; width:100% !important; min-height:13px !important; height:13px !important; max-height:13px !important; padding:0 2px !important; margin:0 !important; font:7px/12px Arial,sans-serif !important; overflow:hidden !important; resize:none !important; background:#fff !important; color:#111 !important; border:1px solid #bbb !important; border-radius:0 !important; }
+  body.simple-week-print .hourday .activity-first { grid-row:1 !important; }
+  body.simple-week-print .hourday .activity-second { grid-row:2 !important; }
+  body.simple-week-print .hourday .hour-mood { display:none !important; }
+  body.simple-week-print .mood-print-value { display:flex !important; grid-column:2 !important; grid-row:1 / span 2 !important; align-items:center !important; justify-content:center !important; min-width:18px !important; width:18px !important; height:26px !important; min-height:26px !important; padding:0 !important; margin:0 !important; box-sizing:border-box !important; background:#fff !important; color:#111 !important; font:bold 7px Arial,sans-serif !important; border-left:1px solid #aaa !important; }
+  body.simple-week-print .hourday .activity.print-run-start, body.simple-week-print .hourday .activity.print-run-middle, body.simple-week-print .hourday .activity.print-run-end, body.simple-week-print .hourday .activity.print-run-single { border-left:1px solid #666 !important; border-right:1px solid #666 !important; }
+  body.simple-week-print .hourday .activity.print-run-start, body.simple-week-print .hourday .activity.print-run-single { border-top:1px solid #666 !important; }
+  body.simple-week-print .hourday .activity.print-run-end, body.simple-week-print .hourday .activity.print-run-single { border-bottom:1px solid #666 !important; }
+  body.simple-week-print .hourday .activity.print-run-middle { border-top:0 !important; border-bottom:0 !important; }
+  body.simple-week-print .mood-print-value.print-run-start, body.simple-week-print .mood-print-value.print-run-single { border-top:1px solid #666 !important; }
+  body.simple-week-print .mood-print-value.print-run-end, body.simple-week-print .mood-print-value.print-run-single { border-bottom:1px solid #666 !important; }
+  body.simple-week-print .mood-print-value.print-run-middle { border-top:0 !important; border-bottom:0 !important; }
+  body.simple-week-print .hour-slot { border-color:#d0d0d0 !important; }
+  body.simple-week-print .daynote-row td { padding:1px !important; border:1px solid #d8d8d8 !important; background:#fff !important; }
+  body.simple-week-print .daynote { min-height:16px !important; height:16px !important; padding:1px !important; font-size:7px !important; border:0 !important; background:#fff !important; color:#111 !important; }
+  body.simple-week-print .note { margin-top:4px !important; padding:4px !important; border:1px solid #bbb !important; break-inside:avoid !important; page-break-inside:avoid !important; }
+  body.simple-week-print .note label { font-size:8px !important; margin-bottom:2px !important; }
+  body.simple-week-print .note textarea { height:22px !important; min-height:22px !important; max-height:22px !important; padding:2px !important; font-size:8px !important; border:0 !important; background:#fff !important; color:#111 !important; }
+  body.simple-week-print .weekgrid, body.simple-week-print .note, body.simple-week-print .daynote-row { break-inside:avoid !important; page-break-inside:avoid !important; }
+}
+</style>
+
 </head>
 <body>
 <header><div class="wrap headrow"><div><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div><button id="headerSignout" class="header-signout" hidden>Abmelden</button></div></header>
