@@ -382,6 +382,35 @@ body.authenticated > #cloudpanel { display:none !important; }
   body.simple-week-print .hourday .hour-mood { width:18px !important; max-width:18px !important; border:0 !important; border-left:1px solid #aaa !important; border-radius:0 !important; padding:0 !important; background:#fff !important; color:transparent !important; font-size:0 !important; appearance:none !important; -webkit-appearance:none !important; }
   body.simple-week-print .mood-print-value { display:flex !important; grid-column:2 !important; grid-row:1 / span 2 !important; align-items:center !important; justify-content:center !important; border-left:1px solid #aaa !important; color:#111 !important; background:#fff !important; font: bold 8px Arial,sans-serif !important; min-width:18px !important; }
   body.simple-week-print .hourday .hour-mood { display:none !important; }
+
+/* Zeitraumdruck: größere, gut lesbare Schrift innerhalb der Tages-Spalten. */
+body.range-print #rangepages { padding:0 !important; }
+body.range-print .range-page h2 { font-size:18px !important; line-height:1.2 !important; }
+body.range-print .range-page .range-subtitle { font-size:10.5px !important; line-height:1.25 !important; }
+body.range-print .range-table { font-size:10.5px !important; }
+body.range-print .range-table thead th { font-size:10.5px !important; line-height:1.15 !important; }
+body.range-print .range-table .r-hour { font-size:10px !important; }
+body.range-print .range-table .r-hour small { font-size:8.5px !important; }
+body.range-print .range-table .r-hour-row,
+body.range-print .range-table .r-hour-cell { height:9mm !important; }
+body.range-print .range-table .r-day-layout { min-height:8.8mm !important; }
+body.range-print .range-table .r-half-entry {
+  min-height:4.4mm !important;
+  padding:1px 3px !important;
+  font-size:10.5px !important;
+  line-height:1.05 !important;
+  overflow-wrap:anywhere !important;
+}
+body.range-print .range-table .r-mood { font-size:14px !important; }
+body.range-print .range-note { font-size:10.5px !important; line-height:1.25 !important; }
+@media print {
+  body.range-print .range-page { break-after:page; page-break-after:always; }
+  body.range-print .range-page:last-child { break-after:auto; page-break-after:auto; }
+  body.range-print .range-table .r-hour-row,
+  body.range-print .range-table .r-hour-cell { height:9mm !important; }
+  body.range-print .range-table .r-half-entry { font-size:10.5px !important; line-height:1.05 !important; }
+}
+
   body.simple-week-print .daynote-row td { background:#fff !important; }
   body.simple-week-print .daynote { min-height:20px !important; height:auto !important; border:0 !important; border-radius:0 !important; padding:1px !important; background:#fff !important; color:#111 !important; font-size:7px !important; }
   body.simple-week-print .note { margin-top:5px !important; padding:4px !important; border:1px solid #888 !important; border-radius:0 !important; box-shadow:none !important; }
