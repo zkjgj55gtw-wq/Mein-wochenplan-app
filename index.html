@@ -361,6 +361,14 @@ body.authenticated > #cloudpanel { display:none !important; }
   body.range-print .range-table .r-mood { display:flex !important; align-items:center !important; justify-content:center !important; min-width:20px !important; font-size:11px !important; line-height:1 !important; font-weight:700 !important; text-align:center !important; color:#111 !important; border-left:1px solid #888 !important; }
   body.range-print .range-table .r-day-note { height:auto !important; min-height:22px !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; font-size:9px !important; }
   body.range-print .range-note { font-size:9px !important; margin-top:6px !important; white-space:pre-wrap !important; color:#111 !important; }
+  /* Leere Folgezeilen einer laufenden Aktivität erhalten sehr dezente Linien. */
+  body.range-print .range-table td.r-continuation {
+    border-top-color:#e7e7e7 !important;
+    border-bottom-color:#e7e7e7 !important;
+    background:#fff !important;
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
   body.range-print .range-actions { display:none !important; }
   @page { size:A4 landscape; margin:7mm; }
 }
@@ -1624,6 +1632,9 @@ function printDateRange(start,end){
   table+='</tr></thead><tbody>';
 
   // Beide Halbstunden eines Zeitfensters ausgeben: 06:00 und 06:30 usw.
+  // Nach Beginn einer Aktivität werden leere Folgezeilen bis zur nächsten
+  // Aktivität dezent markiert, damit längere Zeitabschnitte erkennbar sind.
+  const ongoingActivity=Array(7).fill(false);
   for(let minutes=5*60;minutes<=23*60+30;minutes+=30){
    const hour=Math.floor(minutes/60),half=minutes%60;
    const timeKey=key(monday)+'_'+hour+(half===30?'_30':'');
@@ -1633,10 +1644,12 @@ function printDateRange(start,end){
     const cellKey=key(d)+'_'+hour+(half===30?'_30':'');
     const data=week.cells?.[cellKey]||{};
     const activity=inRange?String(data.activity||''):'';
+    const continuation=inRange&&!activity.trim()&&ongoingActivity[i];
+    if(inRange&&activity.trim())ongoingActivity[i]=true;
     // Die Stimmung gehört zum vollen Stundenfeld und wird daher nur um :00 ausgegeben.
     const mood=inRange&&half===0&&data.mood!==''&&data.mood!=null
       ?'<div class="r-mood">'+escapeHtml(data.mood)+'</div>':'';
-    table+='<td class="r-cell"><div class="r-entry"><div class="r-activity">'+escapeHtml(activity)+'</div>'+mood+'</div></td>';
+    table+='<td class="r-cell'+(continuation?' r-continuation':'')+'"><div class="r-entry"><div class="r-activity">'+escapeHtml(activity)+'</div>'+mood+'</div></td>';
    }
    table+='</tr>';
   }
