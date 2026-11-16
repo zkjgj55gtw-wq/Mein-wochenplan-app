@@ -46,11 +46,8 @@ body.range-print #rangepages{display:block;padding:12px;background:white}
   .range-table th{background:#eee!important;print-color-adjust:exact}
   .range-table th:first-child{width:40px}
   .range-table .r-hour{width:40px;text-align:center}
-  .range-table .r-cell{height:13px;white-space:normal;overflow-wrap:anywhere}
-  .range-table .r-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:5px;width:100%;min-width:0}
-  .range-table .r-activity{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:8px;line-height:1.2}
-  .range-table .r-mood{justify-self:end;align-self:start;margin-left:auto;font-size:10px;line-height:1;font-weight:700;text-align:right;white-space:nowrap;color:#111}
-  .range-table .r-day-note{height:auto;min-height:18px;white-space:pre-wrap;font-size:7px}
+  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .range-table .r-mood{font-size:7px;color:#333}
   .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
   @page{size:A4 landscape;margin:8mm}
 }
@@ -215,10 +212,7 @@ select:disabled, input:disabled, textarea:disabled { opacity: 1 !important; colo
 .hourday .activity{grid-column:1;min-height:28px;height:100%;max-height:72px;resize:vertical;border:1px solid var(--line);border-radius:7px;padding:5px;background:var(--field);color:var(--ink);font:12px Arial,sans-serif;opacity:1}
 .hourday .activity-first{grid-row:1}.hourday .activity-second{grid-row:2}
 .hourday .hour-mood{grid-column:2;grid-row:1 / span 2;width:34px;max-width:34px;min-width:0;align-self:stretch;border:1px solid var(--line);border-radius:8px;padding:4px 0;background:var(--field);color:var(--ink);font-size:16px;font-weight:700;text-align:center}
-.hourday .activity.drag-source{outline:3px solid var(--accent)!important;opacity:.55!important}.hourday .activity.drag-target{outline:3px dashed var(--accent)!important;background:var(--soft)!important}.hourday .activity-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
-/* Dezente Stunden-Hinweise nur auf dem Bildschirm; Placeholder werden nicht gedruckt. */
-.hourday .activity::placeholder{color:var(--muted);opacity:.48;font-weight:500}
-@media print{.hourday .activity::placeholder{color:transparent!important;opacity:0!important}}
+.hourday .activity-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
 .hourday .mood-continuation{border-color:color-mix(in srgb,var(--line) 45%,transparent);background:transparent}
 @media(max-width:650px){.weekgrid{min-width:1580px}.hourrow .hour-time{width:78px;min-width:78px}.hourday{grid-template-columns:minmax(110px,1fr) 34px;min-height:59px}.hourday .activity{font-size:12px}}
 @media print{.hourday{min-height:38px;grid-template-rows:18px 18px;gap:1px}.hourrow .hour-time{font-size:8px}.hour-time small{font-size:7px}.hourday .activity{min-height:17px;font-size:7px;padding:1px}.hourday .hour-mood{font-size:7px;padding:0}}
@@ -327,50 +321,6 @@ body.authenticated > #cloudpanel { display:none !important; }
   .moodcurve-chart line { stroke: #d8ded8 !important; }
   .moodcurve-chart text { fill: #354238 !important; }
   .moodcurve-chart circle { fill: #294b38 !important; stroke: #fff !important; }
-}
-
-
-/* Drucklesbarkeit: größere Schrift und Stimmungszahlen, ohne das schlichte Raster zu verändern. */
-@media print {
-  body.simple-week-print .weekgrid thead th { font-size:10px !important; padding:5px 3px !important; }
-  body.simple-week-print .hour-time { font-size:9px !important; }
-  body.simple-week-print .hour-time small { font-size:7.5px !important; }
-  body.simple-week-print .hourday .activity { font-size:9px !important; line-height:1.15 !important; }
-  body.simple-week-print .mood-print-value { font-size:11px !important; font-weight:700 !important; }
-  body.simple-week-print .daynote { font-size:9px !important; }
-  body.simple-week-print .note label { font-size:9px !important; }
-  body.simple-week-print .note textarea { font-size:9px !important; }
-  body.simple-week-print .printtitle { font-size:10px !important; }
-}
-
-/* Zeitraumdruck: gleiches schlichtes Tabellenbild wie beim normalen Wochendruck. */
-@media print {
-  body.range-print #rangepages { padding:0 !important; background:#fff !important; color:#111 !important; }
-  body.range-print .range-page { padding:0 !important; color:#111 !important; }
-  body.range-print .range-page h2 { font-size:16px !important; font-weight:700 !important; margin:0 0 4px !important; color:#111 !important; }
-  body.range-print .range-page .range-subtitle { font-size:10px !important; color:#333 !important; margin:0 0 7px !important; }
-  body.range-print .range-table { width:100% !important; border-collapse:collapse !important; table-layout:fixed !important; font-size:9px !important; color:#111 !important; }
-  body.range-print .range-table th,
-  body.range-print .range-table td { border:1px solid #b8b8b8 !important; padding:2px 3px !important; vertical-align:middle !important; }
-  body.range-print .range-table thead th { background:#eee !important; color:#111 !important; font-size:10px !important; font-weight:700 !important; text-align:center !important; print-color-adjust:exact; }
-  body.range-print .range-table th:first-child,
-  body.range-print .range-table .r-hour { width:43px !important; min-width:43px !important; text-align:center !important; font-size:8.5px !important; font-weight:600 !important; background:#f5f5f5 !important; }
-  body.range-print .range-table .r-cell { height:17px !important; min-height:17px !important; }
-  body.range-print .range-table .r-entry { display:grid !important; grid-template-columns:minmax(0,1fr) 20px !important; align-items:stretch !important; gap:3px !important; width:100% !important; min-width:0 !important; }
-  body.range-print .range-table .r-activity { min-width:0 !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; font-size:9px !important; line-height:1.15 !important; color:#111 !important; }
-  body.range-print .range-table .r-mood { display:flex !important; align-items:center !important; justify-content:center !important; min-width:20px !important; font-size:11px !important; line-height:1 !important; font-weight:700 !important; text-align:center !important; color:#111 !important; border-left:1px solid #888 !important; }
-  body.range-print .range-table .r-day-note { height:auto !important; min-height:22px !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; font-size:9px !important; }
-  body.range-print .range-note { font-size:9px !important; margin-top:6px !important; white-space:pre-wrap !important; color:#111 !important; }
-  /* Leere Folgezeilen einer laufenden Aktivität erhalten sehr dezente Linien. */
-  body.range-print .range-table td.r-continuation {
-    border-top-color:#e7e7e7 !important;
-    border-bottom-color:#e7e7e7 !important;
-    background:#fff !important;
-    print-color-adjust:exact;
-    -webkit-print-color-adjust:exact;
-  }
-  body.range-print .range-actions { display:none !important; }
-  @page { size:A4 landscape; margin:7mm; }
 }
 
 </style>
@@ -1074,69 +1024,6 @@ body:has(:root[data-theme="dark"]) #calendardialog #moodcalendargrid button:not(
 }
 </style>
 
-
-<style id="dark-daynote-contrast-fix">
-/* Tagesnotizen: im Dunkelmodus dieselbe ruhige dunkle Fläche wie das Wochenraster */
-:root[data-theme="dark"] .weekgrid .daynote-row td {
-  background: var(--paper) !important;
-  color: var(--ink) !important;
-  border-color: var(--line) !important;
-}
-:root[data-theme="dark"] .weekgrid .daynote-row .daynote {
-  background: var(--field) !important;
-  color: var(--ink) !important;
-  border-color: var(--line) !important;
-  -webkit-text-fill-color: var(--ink) !important;
-}
-:root[data-theme="dark"] .weekgrid .daynote-row .daynote::placeholder {
-  color: var(--muted) !important;
-  opacity: 1 !important;
-}
-</style>
-
-
-<style id="print-layout-match-current-ui">
-/* Druck/PDF an das aktuelle Stundenraster anpassen: links Stunden, zwei Aktivitätszeilen, Stimmung rechts. */
-@media print {
-  @page { size: A4 landscape; margin: 5mm; }
-  body.simple-week-print { background:#fff !important; color:#111 !important; font-size:8px !important; }
-  body.simple-week-print > header { padding:0 0 4px !important; margin:0 !important; background:#fff !important; color:#111 !important; }
-  body.simple-week-print > header h1 { font-size:15px !important; margin:0 0 2px !important; }
-  body.simple-week-print > header p { color:#333 !important; font-size:8px !important; margin:0 !important; }
-  body.simple-week-print > main { padding:0 !important; margin:0 !important; max-width:none !important; }
-  body.simple-week-print .printtitle { font-size:8px !important; margin:0 0 3px !important; }
-  body.simple-week-print .gridwrap { overflow:visible !important; margin:0 !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; }
-  body.simple-week-print .weekgrid { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-  body.simple-week-print .weekgrid th, body.simple-week-print .weekgrid td { padding:1px !important; }
-  body.simple-week-print .weekgrid thead th { padding:3px 1px !important; font-size:8px !important; height:19px !important; background:#eee !important; color:#111 !important; }
-  body.simple-week-print .weekgrid thead th:first-child, body.simple-week-print .hour-time { width:38px !important; min-width:38px !important; }
-  body.simple-week-print .weekgrid tbody tr.hourrow { height:27px !important; }
-  body.simple-week-print .weekgrid tbody tr.hourrow > th, body.simple-week-print .weekgrid tbody tr.hourrow > td { height:27px !important; padding:0 !important; }
-  body.simple-week-print .hour-time { font-size:7px !important; line-height:1.1 !important; padding:1px !important; background:#f5f5f5 !important; color:#111 !important; }
-  body.simple-week-print .hour-time small { display:block !important; font-size:6px !important; margin-top:1px !important; }
-  body.simple-week-print .hourday { display:grid !important; grid-template-columns:minmax(0,1fr) 18px !important; grid-template-rows:13px 13px !important; gap:0 !important; min-height:26px !important; height:26px !important; }
-  body.simple-week-print .hourday .activity { display:block !important; box-sizing:border-box !important; width:100% !important; min-height:13px !important; height:13px !important; max-height:13px !important; padding:0 2px !important; margin:0 !important; font:7px/12px Arial,sans-serif !important; overflow:hidden !important; resize:none !important; background:#fff !important; color:#111 !important; border:1px solid #bbb !important; border-radius:0 !important; }
-  body.simple-week-print .hourday .activity-first { grid-row:1 !important; }
-  body.simple-week-print .hourday .activity-second { grid-row:2 !important; }
-  body.simple-week-print .hourday .hour-mood { display:none !important; }
-  body.simple-week-print .mood-print-value { display:flex !important; grid-column:2 !important; grid-row:1 / span 2 !important; align-items:center !important; justify-content:center !important; min-width:18px !important; width:18px !important; height:26px !important; min-height:26px !important; padding:0 !important; margin:0 !important; box-sizing:border-box !important; background:#fff !important; color:#111 !important; font:bold 7px Arial,sans-serif !important; border-left:1px solid #aaa !important; }
-  body.simple-week-print .hourday .activity.print-run-start, body.simple-week-print .hourday .activity.print-run-middle, body.simple-week-print .hourday .activity.print-run-end, body.simple-week-print .hourday .activity.print-run-single { border-left:1px solid #666 !important; border-right:1px solid #666 !important; }
-  body.simple-week-print .hourday .activity.print-run-start, body.simple-week-print .hourday .activity.print-run-single { border-top:1px solid #666 !important; }
-  body.simple-week-print .hourday .activity.print-run-end, body.simple-week-print .hourday .activity.print-run-single { border-bottom:1px solid #666 !important; }
-  body.simple-week-print .hourday .activity.print-run-middle { border-top:0 !important; border-bottom:0 !important; }
-  body.simple-week-print .mood-print-value.print-run-start, body.simple-week-print .mood-print-value.print-run-single { border-top:1px solid #666 !important; }
-  body.simple-week-print .mood-print-value.print-run-end, body.simple-week-print .mood-print-value.print-run-single { border-bottom:1px solid #666 !important; }
-  body.simple-week-print .mood-print-value.print-run-middle { border-top:0 !important; border-bottom:0 !important; }
-  body.simple-week-print .hour-slot { border-color:#d0d0d0 !important; }
-  body.simple-week-print .daynote-row td { padding:1px !important; border:1px solid #d8d8d8 !important; background:#fff !important; }
-  body.simple-week-print .daynote { min-height:16px !important; height:16px !important; padding:1px !important; font-size:7px !important; border:0 !important; background:#fff !important; color:#111 !important; }
-  body.simple-week-print .note { margin-top:4px !important; padding:4px !important; border:1px solid #bbb !important; break-inside:avoid !important; page-break-inside:avoid !important; }
-  body.simple-week-print .note label { font-size:8px !important; margin-bottom:2px !important; }
-  body.simple-week-print .note textarea { height:22px !important; min-height:22px !important; max-height:22px !important; padding:2px !important; font-size:8px !important; border:0 !important; background:#fff !important; color:#111 !important; }
-  body.simple-week-print .weekgrid, body.simple-week-print .note, body.simple-week-print .daynote-row { break-inside:avoid !important; page-break-inside:avoid !important; }
-}
-</style>
-
 </head>
 <body>
 <header><div class="wrap headrow"><div><h1>Mein Wochenplan</h1><p>Aktivität und Stimmung von 1 (schlecht) bis 10 (gut) – für deinen persönlichen Wochenüberblick.</p></div><button id="headerSignout" class="header-signout" hidden>Abmelden</button></div></header>
@@ -1291,86 +1178,8 @@ function persist(message='Gespeichert'){
  const previous=localStorage.getItem('meinWochenplanV2'),next=JSON.stringify(all),last=Number(localStorage.getItem('meinWochenplanV2_lastBackup')||0);
  // Keep a restore point at most every 10 minutes, and before a destructive replacement.
  if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
- try{
-  localStorage.setItem('meinWochenplanV2',next);
-  $('status').textContent=message+' · lokal gespeichert';
-  if(typeof scheduleCloudSync==='function')scheduleCloudSync();
-  return true;
- }catch(e){
-  $('status').textContent='FEHLER: lokal konnte nicht gespeichert werden. Bitte Speicherplatz prüfen und Export sichern.';
-  console.error('Wochenplan konnte lokal nicht gespeichert werden:',e);
-  return false;
- }
+ localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';if(typeof scheduleCloudSync==='function')scheduleCloudSync();
 }
-// Aktivität per langem Drücken verschieben – mit zentralem Touch-Handling für iOS.
-let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragActive=false;
-let dragTouchId=null, dragStartX=0, dragStartY=0;
-function clearDragMarks(){document.querySelectorAll('.activity.drag-source,.activity.drag-target').forEach(el=>el.classList.remove('drag-source','drag-target'));}
-function finishActivityDrag(target, source){
- if(!source||!target||source===target)return;
- const liveActivity=(source.value||'').trim();
- if(!liveActivity)return;
- // Use the live weekly object instead of reconstructing or looking up a stale week reference.
- const weekData=current(); if(!weekData.cells)weekData.cells={};
- const sourceKey=source.dataset.cellkey, targetKey=target.dataset.cellkey;
- const sourceCell=weekData.cells[sourceKey];
- if(!sourceKey||!targetKey||!sourceCell){alert('Der Eintrag konnte nicht gefunden werden. Bitte zuerst den Text im Feld antippen und danach erneut ziehen.');return;}
- const targetCell=weekData.cells[targetKey]||{};
- if((targetCell.activity||'').trim()&&!confirm('Am Ziel steht bereits ein Eintrag. Soll er ersetzt werden?'))return;
- // Move the entire activity string, preserving any other properties in both cells.
- weekData.cells[targetKey]={...targetCell,activity:liveActivity};
- weekData.cells[sourceKey]={...sourceCell,activity:''};
- persist('Aktivität verschoben');render();
-}
-function installActivityDrag(field){
- field.style.touchAction='none';
- field.style.webkitUserSelect='none';
- field.style.userSelect='none';
- field.addEventListener('contextmenu',e=>{if(dragActive)e.preventDefault();});
- field.addEventListener('dragstart',e=>e.preventDefault());
- field.addEventListener('touchstart',e=>{
-  if(!field.value.trim()||e.touches.length!==1)return;
-  const t=e.touches[0];dragCandidate=field;dragStartX=t.clientX;dragStartY=t.clientY;dragTouchId=t.identifier;
-  clearTimeout(dragTimer);
-  dragTimer=setTimeout(()=>{
-   if(dragCandidate!==field)return;
-   dragSource=field;dragActive=true;field.classList.add('drag-source');
-   if(navigator.vibrate)try{navigator.vibrate(25)}catch(_e){}
-  },500);
- },{passive:true});
- field.addEventListener('touchmove',e=>{
-  const t=[...e.touches].find(x=>x.identifier===dragTouchId);if(!t)return;
-  if(!dragActive){if(Math.hypot(t.clientX-dragStartX,t.clientY-dragStartY)>12){clearTimeout(dragTimer);dragCandidate=null;}return;}
-  e.preventDefault();
-  const hit=document.elementFromPoint(t.clientX,t.clientY)?.closest('.hourday .activity');
-  if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');
-  dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
- },{passive:false});
-}
-function endActivityDrag(e){
- if(e.type==='touchend'&&dragTouchId!==null&&!([...e.changedTouches].some(t=>t.identifier===dragTouchId)))return;
- clearTimeout(dragTimer);
- if(dragActive){if(e.cancelable)e.preventDefault();const source=dragSource,target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;dragTouchId=null;if(target)finishActivityDrag(target,source);}
- else {dragCandidate=null;dragTouchId=null;}
-}
-document.addEventListener('touchend',endActivityDrag,{passive:false});
-document.addEventListener('touchcancel',endActivityDrag,{passive:false});
-document.addEventListener('pointerup',e=>{
- if(e.pointerType==='touch'||!dragActive)return;
- const source=dragSource,target=dragTarget;clearDragMarks();dragActive=false;dragCandidate=null;dragSource=null;dragTarget=null;if(target)finishActivityDrag(target,source);
-});
-document.addEventListener('pointermove',e=>{
- if(e.pointerType==='touch'||!dragActive||!dragSource)return;
- const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.hourday .activity');
- if(dragTarget&&dragTarget!==hit)dragTarget.classList.remove('drag-target');dragTarget=hit&&hit!==dragSource?hit:null;if(dragTarget)dragTarget.classList.add('drag-target');
-});
-document.addEventListener('pointerdown',e=>{
- if(e.pointerType==='touch'||e.button!==0)return;
- const field=e.target.closest?.('.hourday .activity');if(!field||!field.value.trim())return;
- dragCandidate=field;dragStartX=e.clientX;dragStartY=e.clientY;clearTimeout(dragTimer);
- dragTimer=setTimeout(()=>{if(dragCandidate===field){dragSource=field;dragActive=true;field.classList.add('drag-source');}},500);
-});
-
 function render(){
  $('weektitle').textContent=weekRange();$('printtitle').textContent='Wochenplan: '+weekRange();if($('jumpdate'))$('jumpdate').value=key(anchor);
  const h=$('headrow');h.innerHTML='<th>Zeit</th>';
@@ -1384,23 +1193,11 @@ function render(){
    const hourly=current().cells[hourId]||{}, half=current().cells[halfId]||{};
    const td=document.createElement('td');td.className='hour-slot';
    const layout=document.createElement('div');layout.className='hourday';layout.dataset.dayindex=String(i+1);
-   const first=document.createElement('textarea');first.className='activity activity-first';first.rows=1;first.dataset.datekey=dateKey;first.dataset.cellkey=hourId;first.dataset.day=day;first.dataset.time=String(hour).padStart(2,'0')+':00';first.placeholder=String(hour).padStart(2,'0')+':00';first.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String(hour).padStart(2,'0')+':30, Aktivität');first.value=hourly.activity||'';first.title=first.value||'Aktivität eintragen';
-   const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.dataset.datekey=dateKey;second.dataset.cellkey=halfId;second.dataset.day=day;second.dataset.time=String(hour).padStart(2,'0')+':30';second.placeholder=String(hour).padStart(2,'0')+':30';second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
-   const mood=document.createElement('select');mood.className='mood hour-mood';mood.dataset.cellkey=hourId;mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
-   const saveActivity=(which)=>()=>{
-    const field=which==='first'?first:second,target=which==='first'?hourId:halfId;
-    const old=current().cells[target]||{};
-    current().cells[target]={...old,activity:field.value};
-    field.title=field.value||'Aktivität eintragen';
-    persist();updateContinuationClasses();
-   };
-   for(const [field,which] of [[first,'first'],[second,'second']]){
-    const save=saveActivity(which);
-    field.addEventListener('input',save);
-    field.addEventListener('change',save);
-    field.addEventListener('blur',save);
-   }
-   for(const field of [first,second]){field.addEventListener('focus',()=>{selectedActivityField=field;});installActivityDrag(field);}
+   const first=document.createElement('textarea');first.className='activity activity-first';first.rows=1;first.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String(hour).padStart(2,'0')+':30, Aktivität');first.value=hourly.activity||'';first.title=first.value||'Aktivität eintragen';
+   const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
+   const mood=document.createElement('select');mood.className='mood hour-mood';mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
+   const saveActivity=(which)=>()=>{const target=which==='first'?hourId:halfId;const old=current().cells[target]||{};current().cells[target]={...old,activity:which==='first'?first.value:second.value};persist();updateContinuationClasses()};
+   first.addEventListener('input',saveActivity('first'));second.addEventListener('input',saveActivity('second'));
    mood.addEventListener('change',()=>{const old=current().cells[hourId]||{};current().cells[hourId]={...old,mood:mood.value};persist();updateContinuationClasses()});
    layout.append(first,second,mood);td.appendChild(layout);tr.appendChild(td);
   });body.appendChild(tr);
@@ -1409,7 +1206,6 @@ function render(){
  DAYS.forEach((day,i)=>{const d=new Date(anchor);d.setDate(d.getDate()+i);const td=document.createElement('td');const input=document.createElement('textarea');input.className='daynote';input.rows=1;input.placeholder='Tagesnotiz …';input.setAttribute('aria-label',day+', Tagesnotiz');input.value=(current().dayNotes||{})[key(d)]||'';input.addEventListener('input',()=>{if(!current().dayNotes)current().dayNotes={};current().dayNotes[key(d)]=input.value;persist()});td.appendChild(input);noteRow.appendChild(td)});body.appendChild(noteRow);
  $('weeknote').value=current().note||'';updateContinuationClasses();
 }
-let selectedActivityField=null;
 function updateContinuationClasses(){
  const rows=[...document.querySelectorAll('#body tr.hourrow')];
  for(let d=1;d<=7;d++){
@@ -1438,23 +1234,6 @@ function updateContinuationClasses(){
 }
 $('nighttoggle').onclick=()=>{const rows=[...document.querySelectorAll('#body tr.night-row')];const show=rows.some(r=>!r.classList.contains('visible'));rows.forEach(r=>r.classList.toggle('visible',show));$('nighttoggle').textContent=show?'🌙 Nachtstunden ausblenden':'🌙 Nachtstunden anzeigen (00:00–05:00)'};
 $('weeknote').addEventListener('input',()=>{current().note=$('weeknote').value;persist()});
-// iOS Safari can suspend a page while an editor is still focused. Flush visible activity fields on exit/background.
-function flushVisibleActivityFields(){
- try{
-  document.querySelectorAll('#body .activity[data-cellkey]').forEach(field=>{
-   const date=new Date(field.dataset.datekey+'T12:00:00');
-   if(isNaN(date))return;
-   const weekKey=key(mondayOf(date));
-   if(!all[weekKey])all[weekKey]={cells:{},note:'',dayNotes:{}};
-   if(!all[weekKey].cells)all[weekKey].cells={};
-   const old=all[weekKey].cells[field.dataset.cellkey]||{};
-   all[weekKey].cells[field.dataset.cellkey]={...old,activity:field.value};
-  });
-  localStorage.setItem('meinWochenplanV2',JSON.stringify(all));
- }catch(e){console.error('Letzte lokale Sicherung fehlgeschlagen:',e);}
-}
-window.addEventListener('pagehide',flushVisibleActivityFields);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushVisibleActivityFields();});
 $('prev').onclick=()=>{anchor.setDate(anchor.getDate()-7);render()};
 $('next').onclick=()=>{anchor.setDate(anchor.getDate()+7);render()};
 function prepareSimplePrint(){
@@ -1501,12 +1280,7 @@ function prepareSimplePrint(){
  }
 }
 function cleanupSimplePrint(){document.querySelectorAll('.mood-print-value').forEach(el=>el.remove());document.body.classList.remove('simple-week-print');}
-// Normaler Wochendruck: die bewährte, schlichte PDF-Tabelle direkt aus der Wochenansicht.
-$('print').onclick=()=>{
- document.body.classList.add('simple-week-print');
- prepareSimplePrint();
- window.print();
-};
+$('print').onclick=()=>{document.body.classList.add('simple-week-print');prepareSimplePrint();window.print()};
 window.addEventListener('afterprint',cleanupSimplePrint);
 $('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importbtn').onclick=()=>$('importfile').click();
@@ -1614,54 +1388,31 @@ function printDateRange(start,end){
  if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
   alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
  }
- const pages=$('rangepages');
- pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
- const rangeStart=new Date(start);rangeStart.setHours(0,0,0,0);
- const rangeEnd=new Date(end);rangeEnd.setHours(23,59,59,999);
- let monday=mondayOf(rangeStart);
- while(monday<=rangeEnd){
+ const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ let monday=mondayOf(start);
+ while(monday<=end){
   const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
-  const week=all[key(monday)]||{cells:{},note:'',dayNotes:{}};
+  const week=all[key(monday)]||{cells:{},note:''};
   let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
   const dates=[];
   for(let i=0;i<7;i++){
    const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
-   const inRange=d>=rangeStart&&d<=rangeEnd;
+   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
    table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
   }
   table+='</tr></thead><tbody>';
-
-  // Beide Halbstunden eines Zeitfensters ausgeben: 06:00 und 06:30 usw.
-  // Nach Beginn einer Aktivität werden leere Folgezeilen bis zur nächsten
-  // Aktivität dezent markiert, damit längere Zeitabschnitte erkennbar sind.
-  const ongoingActivity=Array(7).fill(false);
-  for(let minutes=5*60;minutes<=23*60+30;minutes+=30){
-   const hour=Math.floor(minutes/60),half=minutes%60;
-   const timeKey=key(monday)+'_'+hour+(half===30?'_30':'');
-   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':'+String(half).padStart(2,'0')+'</th>';
+  for(let hour=5;hour<=23;hour++){
+   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
    for(const d of dates){
-    const inRange=d>=rangeStart&&d<=rangeEnd;
-    const cellKey=key(d)+'_'+hour+(half===30?'_30':'');
-    const data=week.cells?.[cellKey]||{};
-    const activity=inRange?String(data.activity||''):'';
-    const continuation=inRange&&!activity.trim()&&ongoingActivity[i];
-    if(inRange&&activity.trim())ongoingActivity[i]=true;
-    // Die Stimmung gehört zum vollen Stundenfeld und wird daher nur um :00 ausgegeben.
-    const mood=inRange&&half===0&&data.mood!==''&&data.mood!=null
-      ?'<div class="r-mood">'+escapeHtml(data.mood)+'</div>':'';
-    table+='<td class="r-cell'+(continuation?' r-continuation':'')+'"><div class="r-entry"><div class="r-activity">'+escapeHtml(activity)+'</div>'+mood+'</div></td>';
+    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+    const data=week.cells?.[key(d)+'_'+hour]||{};
+    const activity=inRange?(data.activity||''):'';
+    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
+    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
    }
    table+='</tr>';
   }
-
-  // Tagesnotizen werden wie die Aktivitäten nur innerhalb des gewählten Zeitraums gedruckt.
-  table+='<tr class="r-notes-row"><th class="r-hour">Notiz</th>';
-  for(const d of dates){
-   const inRange=d>=rangeStart&&d<=rangeEnd;
-   const dayNote=inRange?String(week.dayNotes?.[key(d)]||''):'';
-   table+='<td class="r-cell r-day-note">'+escapeHtml(dayNote)+'</td>';
-  }
-  table+='</tr></tbody></table>';
+  table+='</tbody></table>';
   const section=document.createElement('section');section.className='range-page';
   const note=(week.note||'').trim();
   section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
@@ -1670,7 +1421,7 @@ function printDateRange(start,end){
  }
  document.body.classList.add('range-print');
  $('range-print-now').onclick=()=>window.print();
- $('range-back').onclick=()=>{document.body.classList.remove('range-print');pages.innerHTML='';};
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
  try{window.print()}catch(e){}
 }
 function openRangeDialog(fromDate=null,toDate=null){
@@ -1955,99 +1706,17 @@ const SUPABASE_URL = 'https://pjtirgmwezubujuvnphq.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_10alv1-N067VKGQpujRuZw_uCztJekO';
 let cloudClient = null, cloudReady = false, cloudBusy = false, cloudApplying = false;
 let cloudSyncTimer = null, cloudHandledUser = null, cloudKnownUpdatedAt = null;
-let cloudSyncQueued = false, cloudRevision = 0;
 function cloudStatus(msg, bad=false){ $('cloudstatus').textContent=msg; $('cloudstatus').style.color=bad?'#a43d37':'#647067'; }
-// Automatische Abmeldung nach 5 Minuten ohne Nutzeraktivität.
-const INACTIVITY_LIMIT_MS = 5 * 60 * 1000;
-const INACTIVITY_KEY = 'meinWochenplanLastActivity';
-let inactivityTimer = null;
-let inactivityActive = false;
-function recordUserActivity(){
-  if(!inactivityActive)return;
-  try{sessionStorage.setItem(INACTIVITY_KEY,String(Date.now()));}catch(e){}
-  scheduleInactivityLogout();
-}
-function stopInactivityLogout(){
-  inactivityActive=false;
-  if(inactivityTimer){clearTimeout(inactivityTimer);inactivityTimer=null;}
-  try{sessionStorage.removeItem(INACTIVITY_KEY);}catch(e){}
-}
-function scheduleInactivityLogout(){
-  if(!inactivityActive)return;
-  if(inactivityTimer)clearTimeout(inactivityTimer);
-  let last=Date.now();
-  try{last=Number(sessionStorage.getItem(INACTIVITY_KEY))||Date.now();}catch(e){}
-  const remaining=INACTIVITY_LIMIT_MS-(Date.now()-last);
-  if(remaining<=0){
-    inactivityTimer=setTimeout(()=>{if(inactivityActive)performCloudSignout(null);},0);
-  }else{
-    inactivityTimer=setTimeout(()=>{if(inactivityActive)performCloudSignout(null);},remaining);
-  }
-}
-function setInactivitySession(loggedIn){
-  if(!loggedIn){stopInactivityLogout();return;}
-  if(!inactivityActive){
-    inactivityActive=true;
-    try{sessionStorage.setItem(INACTIVITY_KEY,String(Date.now()));}catch(e){}
-  }
-  scheduleInactivityLogout();
-}
-// Display-off/background pauses can suspend timers on iPhone; check elapsed time on return.
-['pointerdown','keydown','touchstart','click','input','scroll'].forEach(type=>{
-  document.addEventListener(type,recordUserActivity,{passive:true,capture:true});
-});
-document.addEventListener('visibilitychange',()=>{
-  if(!inactivityActive)return;
-  if(document.visibilityState==='visible')scheduleInactivityLogout();
-});
-window.addEventListener('focus',()=>{if(inactivityActive)scheduleInactivityLogout();});
 function cloudSetLoggedIn(session){
   const yes=!!session;
-  setInactivitySession(yes);
   $('cloudactions').hidden=!yes;
   $('cloudlogin').querySelectorAll('input').forEach(el=>el.disabled=yes);
   $('cloudsignin').hidden=yes; $('cloudsignup').hidden=yes; const topLogout=$('headerSignout'); if(topLogout)topLogout.hidden=!yes; const legacyLogout=$('cloudsignout'); if(legacyLogout)legacyLogout.hidden=!yes;
 }
 function cloudLocalJson(){ return JSON.stringify(all||{}); }
-// Compare JSON data independent of object-key order; timestamps alone do not mean the plan changed.
-function cloudStableJson(value){
-  if(Array.isArray(value))return '['+value.map(cloudStableJson).join(',')+']';
-  if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+cloudStableJson(value[k])).join(',')+'}';
-  return JSON.stringify(value);
-}
 function cloudHasLocalData(obj){
   if(!obj||typeof obj!=='object')return false;
   return Object.values(obj).some(w=>w&&(w.note||'').trim() || Object.values(w?.cells||{}).some(c=>(c?.activity||'').trim() || (c?.mood!==''&&c?.mood!=null)));
-}
-// Merge without discarding entries from either device. If the same field differs,
-// the current device wins; this avoids replacing newly typed local activities with an older cloud copy.
-function mergePlanDataPreservingLocal(localPlan,remotePlan){
- const merged=JSON.parse(JSON.stringify(remotePlan||{}));
- for(const [weekKey,localWeek] of Object.entries(localPlan||{})){
-  if(!localWeek||typeof localWeek!=='object')continue;
-  if(!merged[weekKey]||typeof merged[weekKey]!=='object')merged[weekKey]={cells:{},note:'',dayNotes:{}};
-  const target=merged[weekKey];
-  if(!target.cells||typeof target.cells!=='object')target.cells={};
-  for(const [cellKey,localCell] of Object.entries(localWeek.cells||{})){
-   if(!localCell||typeof localCell!=='object')continue;
-   target.cells[cellKey]={...(target.cells[cellKey]||{}),...localCell};
-  }
-  if(Object.prototype.hasOwnProperty.call(localWeek,'note'))target.note=localWeek.note;
-  if(localWeek.dayNotes&&typeof localWeek.dayNotes==='object'){
-   target.dayNotes={...(target.dayNotes||{}),...localWeek.dayNotes};
-  }
-  for(const [k,v] of Object.entries(localWeek)){
-   if(!['cells','note','dayNotes'].includes(k))target[k]=v;
-  }
- }
- return merged;
-}
-function saveMergedPlanLocally(plan,reason){
- const before=localStorage.getItem('meinWochenplanV2');
- if(before&&before!=='{}')saveBackupSnapshot(before,reason||'Sicherung vor Datenabgleich');
- all=plan;
- localStorage.setItem('meinWochenplanV2',JSON.stringify(all));
- render();
 }
 async function cloudGetUser(){
   if(!cloudClient)return null;
@@ -2056,57 +1725,47 @@ async function cloudGetUser(){
   return data.user||null;
 }
 async function cloudUpload(silent=false){
-  if(!cloudClient||!cloudReady||cloudApplying)return;
-  if(cloudBusy){cloudSyncQueued=true;return;}
+  if(!cloudClient||!cloudReady||cloudBusy||cloudApplying)return;
+  const user=await cloudGetUser();
+  if(!user){if(!silent)cloudStatus('Bitte anmelden, um die Cloud-Sicherung zu nutzen.',true);return;}
   cloudBusy=true;
-  const revisionAtStart=cloudRevision;
   try{
-    const user=await cloudGetUser();
-    if(!user){if(!silent)cloudStatus('Bitte anmelden, um die Cloud-Sicherung zu nutzen.',true);return;}
-    // Read the newest cloud version before writing, then merge instead of overwriting it.
+    // Conflict guard: compare the cloud timestamp with the version last observed by this browser.
     const {data:latest,error:readError}=await cloudClient.from('wochenplan_cloud')
       .select('updated_at,plan_data').eq('user_id',user.id).maybeSingle();
     if(readError)throw readError;
-    if(latest&&latest.plan_data&&typeof latest.plan_data==='object'&&!Array.isArray(latest.plan_data)){
-      if(cloudKnownUpdatedAt&&latest.updated_at!==cloudKnownUpdatedAt){
+    if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt){
+      cloudReady=false;
+      cloudStatus('Konflikt erkannt: Die Cloud wurde zwischenzeitlich geändert. Deine lokalen Änderungen bleiben erhalten. Bitte lade die Cloud-Version oder entscheide dich bewusst für die lokale Version.',true);
+      if(confirm('Die Cloud wurde seit dem letzten Abgleich geändert.\n\nOK = Cloud-Version laden (lokale Version wird vorher gesichert).\nAbbrechen = lokale Version behalten und die Cloud bewusst überschreiben.')){
         const localRaw=cloudLocalJson();
-        const merged=mergePlanDataPreservingLocal(all,latest.plan_data);
-        const mergedRaw=JSON.stringify(merged);
-        if(mergedRaw!==localRaw){
-          saveMergedPlanLocally(merged,'Sicherung vor automatischem Cloud-Konfliktabgleich');
-        }
-        cloudKnownUpdatedAt=latest.updated_at;
-      }else if(!cloudKnownUpdatedAt){
-        cloudKnownUpdatedAt=latest.updated_at;
+        if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor Konfliktauflösung');
+        cloudApplying=true;all=latest.plan_data||{};localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;
+        cloudKnownUpdatedAt=latest.updated_at;cloudReady=true;cloudStatus('Konflikt gelöst: Cloud-Version geladen.');
+        return;
       }
+      // Re-read immediately before an explicit overwrite; still keep a local snapshot.
+      const localRaw=cloudLocalJson();
+      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor bewusstem Cloud-Überschreiben');
     }
     const snapshot=JSON.parse(cloudLocalJson());
     const savedAt=new Date().toISOString();
-    const {data:written,error}=await cloudClient.from('wochenplan_cloud').upsert(
+    const {error}=await cloudClient.from('wochenplan_cloud').upsert(
       {user_id:user.id,plan_data:snapshot,updated_at:savedAt},
       {onConflict:'user_id'}
-    ).select('updated_at').single();
+    );
     if(error)throw error;
-    cloudKnownUpdatedAt=written?.updated_at||savedAt;cloudReady=true;
-    if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Alle Änderungen sind synchronisiert.');
+    cloudKnownUpdatedAt=savedAt;cloudReady=true;
+    if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Automatische Synchronisierung ist aktiv.');
     else cloudStatus('Automatisch in der Cloud gesichert.');
-  }catch(e){
-    cloudStatus('Cloud-Sicherung fehlgeschlagen: '+(e?.message||e)+' Deine lokalen Einträge bleiben erhalten.',true);
-  }finally{
-    cloudBusy=false;
-    if(cloudSyncQueued||cloudRevision!==revisionAtStart){
-      cloudSyncQueued=false;
-      scheduleCloudSync();
-    }
-  }
+  }catch(e){cloudStatus('Cloud-Sicherung fehlgeschlagen: '+e.message,true)}
+  finally{cloudBusy=false}
 }
 function scheduleCloudSync(){
-  cloudRevision++;
   if(!cloudReady||!cloudClient||cloudApplying)return;
-  if(cloudBusy){cloudSyncQueued=true;return;}
   if(cloudSyncTimer)clearTimeout(cloudSyncTimer);
-  cloudStatus('Lokal gespeichert · Cloud-Sicherung wird vorbereitet …');
-  cloudSyncTimer=setTimeout(()=>cloudUpload(true),900);
+  cloudStatus('Änderung lokal gespeichert · Cloud-Sicherung wird vorbereitet …');
+  cloudSyncTimer=setTimeout(()=>cloudUpload(true),1800);
 }
 async function cloudInitialSync(userId){
   if(!cloudClient||cloudHandledUser===userId)return;
@@ -2136,22 +1795,21 @@ async function cloudInitialSync(userId){
       cloudReady=true;cloudStatus('Cloud und dieses Gerät sind aktuell.');
       return;
     }
-    // Never discard local entries during login/reopen. Combine both versions,
-    // preferring explicitly stored local fields where the same slot differs.
-    const merged=mergePlanDataPreservingLocal(all,remoteObj);
-    const mergedRaw=JSON.stringify(merged);
-    cloudReady=true;
-    if(mergedRaw!==remoteRaw){
+    const localHas=cloudHasLocalData(all),remoteHas=cloudHasLocalData(remoteObj);
+    if(!localHas&&remoteHas){
       cloudApplying=true;
-      saveMergedPlanLocally(merged,'Sicherung vor nicht-destruktivem Cloud-Abgleich');
-      cloudApplying=false;
-      cloudStatus('Lokale und Cloud-Einträge wurden zusammengeführt. Synchronisierung läuft …');
-      await cloudUpload(true);
+      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Sicherung vor automatischem Cloud-Laden');
+      all=remoteObj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();
+      cloudApplying=false;cloudReady=true;cloudStatus('Cloud-Daten geladen. Automatische Synchronisierung ist aktiv.');
+      return;
+    }
+    const choice=confirm('Die Cloud und dieses Gerät enthalten unterschiedliche Daten.\n\nOK = Cloud-Version laden. Deine lokalen Daten werden vorher als Sicherung gespeichert.\nAbbrechen = lokale Version behalten und damit die Cloud aktualisieren.');
+    if(choice){
+      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Sicherung vor Cloud-Abgleich');
+      cloudApplying=true;all=remoteObj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;
+      cloudReady=true;cloudStatus('Cloud-Version geladen. Automatische Synchronisierung ist aktiv.');
     }else{
-      cloudApplying=true;
-      if(localRaw!==remoteRaw)saveMergedPlanLocally(merged,'Sicherung vor Laden der Cloud-Daten');
-      cloudApplying=false;
-      cloudReady=true;cloudStatus('Cloud und dieses Gerät sind aktuell.');
+      cloudReady=true;await cloudUpload(false);
     }
   }catch(e){cloudReady=false;cloudHandledUser=null;cloudStatus('Cloud-Abgleich fehlgeschlagen: '+e.message+' Bitte einmal abmelden und erneut anmelden.',true)}
   finally{cloudApplying=false}
