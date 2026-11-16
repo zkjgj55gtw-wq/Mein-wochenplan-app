@@ -46,8 +46,10 @@ body.range-print #rangepages{display:block;padding:12px;background:white}
   .range-table th{background:#eee!important;print-color-adjust:exact}
   .range-table th:first-child{width:40px}
   .range-table .r-hour{width:40px;text-align:center}
-  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
-  .range-table .r-mood{font-size:7px;color:#333}
+  .range-table .r-cell{height:20px;white-space:normal;overflow-wrap:anywhere}
+  .range-table .r-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:5px;width:100%;min-width:0}
+  .range-table .r-activity{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:8px;line-height:1.2}
+  .range-table .r-mood{justify-self:end;align-self:start;margin-left:auto;font-size:12px;line-height:1;font-weight:700;text-align:right;white-space:nowrap;color:#111}
   .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
   @page{size:A4 landscape;margin:8mm}
 }
@@ -1544,8 +1546,8 @@ function printDateRange(start,end){
     const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
     const data=week.cells?.[key(d)+'_'+hour]||{};
     const activity=inRange?(data.activity||''):'';
-    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
-    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
+    const mood=inRange&&data.mood?'<div class="r-mood">'+escapeHtml(data.mood)+'</div>':'';
+    table+='<td class="r-cell"><div class="r-entry"><div class="r-activity">'+escapeHtml(activity)+'</div>'+mood+'</div></td>';
    }
    table+='</tr>';
   }
