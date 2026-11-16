@@ -1246,7 +1246,16 @@ function persist(message='Gespeichert'){
  const previous=localStorage.getItem('meinWochenplanV2'),next=JSON.stringify(all),last=Number(localStorage.getItem('meinWochenplanV2_lastBackup')||0);
  // Keep a restore point at most every 10 minutes, and before a destructive replacement.
  if(previous&&previous!==next&&Date.now()-last>=10*60*1000)saveBackupSnapshot(previous);
- localStorage.setItem('meinWochenplanV2',next);$('status').textContent=message+' · lokal auf diesem Gerät';if(typeof scheduleCloudSync==='function')scheduleCloudSync();
+ try{
+  localStorage.setItem('meinWochenplanV2',next);
+  $('status').textContent=message+' · lokal gespeichert';
+  if(typeof scheduleCloudSync==='function')scheduleCloudSync();
+  return true;
+ }catch(e){
+  $('status').textContent='FEHLER: lokal konnte nicht gespeichert werden. Bitte Speicherplatz prüfen und Export sichern.';
+  console.error('Wochenplan konnte lokal nicht gespeichert werden:',e);
+  return false;
+ }
 }
 // Aktivität per langem Drücken verschieben – mit zentralem Touch-Handling für iOS.
 let dragCandidate=null, dragTimer=null, dragSource=null, dragTarget=null, dragActive=false;
@@ -1332,9 +1341,20 @@ function render(){
    const layout=document.createElement('div');layout.className='hourday';layout.dataset.dayindex=String(i+1);
    const first=document.createElement('textarea');first.className='activity activity-first';first.rows=1;first.dataset.datekey=dateKey;first.dataset.cellkey=hourId;first.dataset.day=day;first.dataset.time=String(hour).padStart(2,'0')+':00';first.placeholder=String(hour).padStart(2,'0')+':00';first.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String(hour).padStart(2,'0')+':30, Aktivität');first.value=hourly.activity||'';first.title=first.value||'Aktivität eintragen';
    const second=document.createElement('textarea');second.className='activity activity-second';second.rows=1;second.dataset.datekey=dateKey;second.dataset.cellkey=halfId;second.dataset.day=day;second.dataset.time=String(hour).padStart(2,'0')+':30';second.placeholder=String(hour).padStart(2,'0')+':30';second.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':30–'+String((hour+1)%24).padStart(2,'0')+':00, Aktivität');second.value=half.activity||'';second.title=second.value||'Aktivität eintragen';
-   const mood=document.createElement('select');mood.className='mood hour-mood';mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
-   const saveActivity=(which)=>()=>{const target=which==='first'?hourId:halfId;const old=current().cells[target]||{};current().cells[target]={...old,activity:which==='first'?first.value:second.value};persist();updateContinuationClasses()};
-   first.addEventListener('input',()=>{saveActivity('first')();});second.addEventListener('input',()=>{saveActivity('second')();});
+   const mood=document.createElement('select');mood.className='mood hour-mood';mood.dataset.cellkey=hourId;mood.setAttribute('aria-label',day+', '+String(hour).padStart(2,'0')+':00–'+String((hour+1)%24).padStart(2,'0')+':00, Stimmung');mood.innerHTML='<option value="">–</option>'+Array.from({length:10},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('');mood.value=hourly.mood||half.mood||'';mood.title=mood.value?'Stimmung '+mood.value:'Stimmung bei Änderung eintragen';
+   const saveActivity=(which)=>()=>{
+    const field=which==='first'?first:second,target=which==='first'?hourId:halfId;
+    const old=current().cells[target]||{};
+    current().cells[target]={...old,activity:field.value};
+    field.title=field.value||'Aktivität eintragen';
+    persist();updateContinuationClasses();
+   };
+   for(const [field,which] of [[first,'first'],[second,'second']]){
+    const save=saveActivity(which);
+    field.addEventListener('input',save);
+    field.addEventListener('change',save);
+    field.addEventListener('blur',save);
+   }
    for(const field of [first,second]){field.addEventListener('focus',()=>{selectedActivityField=field;});installActivityDrag(field);}
    mood.addEventListener('change',()=>{const old=current().cells[hourId]||{};current().cells[hourId]={...old,mood:mood.value};persist();updateContinuationClasses()});
    layout.append(first,second,mood);td.appendChild(layout);tr.appendChild(td);
@@ -1373,6 +1393,23 @@ function updateContinuationClasses(){
 }
 $('nighttoggle').onclick=()=>{const rows=[...document.querySelectorAll('#body tr.night-row')];const show=rows.some(r=>!r.classList.contains('visible'));rows.forEach(r=>r.classList.toggle('visible',show));$('nighttoggle').textContent=show?'🌙 Nachtstunden ausblenden':'🌙 Nachtstunden anzeigen (00:00–05:00)'};
 $('weeknote').addEventListener('input',()=>{current().note=$('weeknote').value;persist()});
+// iOS Safari can suspend a page while an editor is still focused. Flush visible activity fields on exit/background.
+function flushVisibleActivityFields(){
+ try{
+  document.querySelectorAll('#body .activity[data-cellkey]').forEach(field=>{
+   const date=new Date(field.dataset.datekey+'T12:00:00');
+   if(isNaN(date))return;
+   const weekKey=key(mondayOf(date));
+   if(!all[weekKey])all[weekKey]={cells:{},note:'',dayNotes:{}};
+   if(!all[weekKey].cells)all[weekKey].cells={};
+   const old=all[weekKey].cells[field.dataset.cellkey]||{};
+   all[weekKey].cells[field.dataset.cellkey]={...old,activity:field.value};
+  });
+  localStorage.setItem('meinWochenplanV2',JSON.stringify(all));
+ }catch(e){console.error('Letzte lokale Sicherung fehlgeschlagen:',e);}
+}
+window.addEventListener('pagehide',flushVisibleActivityFields);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushVisibleActivityFields();});
 $('prev').onclick=()=>{anchor.setDate(anchor.getDate()-7);render()};
 $('next').onclick=()=>{anchor.setDate(anchor.getDate()+7);render()};
 function prepareSimplePrint(){
@@ -1845,6 +1882,7 @@ const SUPABASE_URL = 'https://pjtirgmwezubujuvnphq.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_10alv1-N067VKGQpujRuZw_uCztJekO';
 let cloudClient = null, cloudReady = false, cloudBusy = false, cloudApplying = false;
 let cloudSyncTimer = null, cloudHandledUser = null, cloudKnownUpdatedAt = null;
+let cloudSyncQueued = false, cloudRevision = 0;
 function cloudStatus(msg, bad=false){ $('cloudstatus').textContent=msg; $('cloudstatus').style.color=bad?'#a43d37':'#647067'; }
 // Automatische Abmeldung nach 5 Minuten ohne Nutzeraktivität.
 const INACTIVITY_LIMIT_MS = 5 * 60 * 1000;
@@ -1908,6 +1946,36 @@ function cloudHasLocalData(obj){
   if(!obj||typeof obj!=='object')return false;
   return Object.values(obj).some(w=>w&&(w.note||'').trim() || Object.values(w?.cells||{}).some(c=>(c?.activity||'').trim() || (c?.mood!==''&&c?.mood!=null)));
 }
+// Merge without discarding entries from either device. If the same field differs,
+// the current device wins; this avoids replacing newly typed local activities with an older cloud copy.
+function mergePlanDataPreservingLocal(localPlan,remotePlan){
+ const merged=JSON.parse(JSON.stringify(remotePlan||{}));
+ for(const [weekKey,localWeek] of Object.entries(localPlan||{})){
+  if(!localWeek||typeof localWeek!=='object')continue;
+  if(!merged[weekKey]||typeof merged[weekKey]!=='object')merged[weekKey]={cells:{},note:'',dayNotes:{}};
+  const target=merged[weekKey];
+  if(!target.cells||typeof target.cells!=='object')target.cells={};
+  for(const [cellKey,localCell] of Object.entries(localWeek.cells||{})){
+   if(!localCell||typeof localCell!=='object')continue;
+   target.cells[cellKey]={...(target.cells[cellKey]||{}),...localCell};
+  }
+  if(Object.prototype.hasOwnProperty.call(localWeek,'note'))target.note=localWeek.note;
+  if(localWeek.dayNotes&&typeof localWeek.dayNotes==='object'){
+   target.dayNotes={...(target.dayNotes||{}),...localWeek.dayNotes};
+  }
+  for(const [k,v] of Object.entries(localWeek)){
+   if(!['cells','note','dayNotes'].includes(k))target[k]=v;
+  }
+ }
+ return merged;
+}
+function saveMergedPlanLocally(plan,reason){
+ const before=localStorage.getItem('meinWochenplanV2');
+ if(before&&before!=='{}')saveBackupSnapshot(before,reason||'Sicherung vor Datenabgleich');
+ all=plan;
+ localStorage.setItem('meinWochenplanV2',JSON.stringify(all));
+ render();
+}
 async function cloudGetUser(){
   if(!cloudClient)return null;
   const {data,error}=await cloudClient.auth.getUser();
@@ -1915,33 +1983,29 @@ async function cloudGetUser(){
   return data.user||null;
 }
 async function cloudUpload(silent=false){
-  if(!cloudClient||!cloudReady||cloudBusy||cloudApplying)return;
-  const user=await cloudGetUser();
-  if(!user){if(!silent)cloudStatus('Bitte anmelden, um die Cloud-Sicherung zu nutzen.',true);return;}
+  if(!cloudClient||!cloudReady||cloudApplying)return;
+  if(cloudBusy){cloudSyncQueued=true;return;}
   cloudBusy=true;
+  const revisionAtStart=cloudRevision;
   try{
-    // Conflict guard: compare the cloud timestamp with the version last observed by this browser.
+    const user=await cloudGetUser();
+    if(!user){if(!silent)cloudStatus('Bitte anmelden, um die Cloud-Sicherung zu nutzen.',true);return;}
+    // Read the newest cloud version before writing, then merge instead of overwriting it.
     const {data:latest,error:readError}=await cloudClient.from('wochenplan_cloud')
       .select('updated_at,plan_data').eq('user_id',user.id).maybeSingle();
     if(readError)throw readError;
-    if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt &&
-       cloudStableJson(latest.plan_data||{})===cloudStableJson(JSON.parse(cloudLocalJson()))){
-      // Another write may have updated the timestamp without changing the actual plan.
-      cloudKnownUpdatedAt=latest.updated_at;
-    }
-    if(latest && cloudKnownUpdatedAt && latest.updated_at!==cloudKnownUpdatedAt){
-      cloudReady=false;
-      cloudStatus('Konflikt erkannt: Die Cloud wurde zwischenzeitlich geändert. Deine lokalen Änderungen bleiben erhalten. Bitte lade die Cloud-Version oder entscheide dich bewusst für die lokale Version.',true);
-      if(confirm('Die Cloud wurde seit dem letzten Abgleich geändert.\n\nOK = Cloud-Version laden (lokale Version wird vorher gesichert).\nAbbrechen = lokale Version behalten und die Cloud bewusst überschreiben.')){
+    if(latest&&latest.plan_data&&typeof latest.plan_data==='object'&&!Array.isArray(latest.plan_data)){
+      if(cloudKnownUpdatedAt&&latest.updated_at!==cloudKnownUpdatedAt){
         const localRaw=cloudLocalJson();
-        if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor Konfliktauflösung');
-        cloudApplying=true;all=latest.plan_data||{};localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;
-        cloudKnownUpdatedAt=latest.updated_at;cloudReady=true;cloudStatus('Konflikt gelöst: Cloud-Version geladen.');
-        return;
+        const merged=mergePlanDataPreservingLocal(all,latest.plan_data);
+        const mergedRaw=JSON.stringify(merged);
+        if(mergedRaw!==localRaw){
+          saveMergedPlanLocally(merged,'Sicherung vor automatischem Cloud-Konfliktabgleich');
+        }
+        cloudKnownUpdatedAt=latest.updated_at;
+      }else if(!cloudKnownUpdatedAt){
+        cloudKnownUpdatedAt=latest.updated_at;
       }
-      // Re-read immediately before an explicit overwrite; still keep a local snapshot.
-      const localRaw=cloudLocalJson();
-      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Lokale Sicherung vor bewusstem Cloud-Überschreiben');
     }
     const snapshot=JSON.parse(cloudLocalJson());
     const savedAt=new Date().toISOString();
@@ -1950,18 +2014,26 @@ async function cloudUpload(silent=false){
       {onConflict:'user_id'}
     ).select('updated_at').single();
     if(error)throw error;
-    // Store the timestamp actually returned by Postgres, not the client-side guess.
     cloudKnownUpdatedAt=written?.updated_at||savedAt;cloudReady=true;
-    if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Automatische Synchronisierung ist aktiv.');
+    if(!silent)cloudStatus('Cloud-Sicherung erfolgreich. Alle Änderungen sind synchronisiert.');
     else cloudStatus('Automatisch in der Cloud gesichert.');
-  }catch(e){cloudStatus('Cloud-Sicherung fehlgeschlagen: '+e.message,true)}
-  finally{cloudBusy=false}
+  }catch(e){
+    cloudStatus('Cloud-Sicherung fehlgeschlagen: '+(e?.message||e)+' Deine lokalen Einträge bleiben erhalten.',true);
+  }finally{
+    cloudBusy=false;
+    if(cloudSyncQueued||cloudRevision!==revisionAtStart){
+      cloudSyncQueued=false;
+      scheduleCloudSync();
+    }
+  }
 }
 function scheduleCloudSync(){
+  cloudRevision++;
   if(!cloudReady||!cloudClient||cloudApplying)return;
+  if(cloudBusy){cloudSyncQueued=true;return;}
   if(cloudSyncTimer)clearTimeout(cloudSyncTimer);
-  cloudStatus('Änderung lokal gespeichert · Cloud-Sicherung wird vorbereitet …');
-  cloudSyncTimer=setTimeout(()=>cloudUpload(true),1800);
+  cloudStatus('Lokal gespeichert · Cloud-Sicherung wird vorbereitet …');
+  cloudSyncTimer=setTimeout(()=>cloudUpload(true),900);
 }
 async function cloudInitialSync(userId){
   if(!cloudClient||cloudHandledUser===userId)return;
@@ -1991,21 +2063,22 @@ async function cloudInitialSync(userId){
       cloudReady=true;cloudStatus('Cloud und dieses Gerät sind aktuell.');
       return;
     }
-    const localHas=cloudHasLocalData(all),remoteHas=cloudHasLocalData(remoteObj);
-    if(!localHas&&remoteHas){
+    // Never discard local entries during login/reopen. Combine both versions,
+    // preferring explicitly stored local fields where the same slot differs.
+    const merged=mergePlanDataPreservingLocal(all,remoteObj);
+    const mergedRaw=JSON.stringify(merged);
+    cloudReady=true;
+    if(mergedRaw!==remoteRaw){
       cloudApplying=true;
-      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Sicherung vor automatischem Cloud-Laden');
-      all=remoteObj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();
-      cloudApplying=false;cloudReady=true;cloudStatus('Cloud-Daten geladen. Automatische Synchronisierung ist aktiv.');
-      return;
-    }
-    const choice=confirm('Die Cloud und dieses Gerät enthalten unterschiedliche Daten.\n\nOK = Cloud-Version laden. Deine lokalen Daten werden vorher als Sicherung gespeichert.\nAbbrechen = lokale Version behalten und damit die Cloud aktualisieren.');
-    if(choice){
-      if(localRaw!=='{}')saveBackupSnapshot(localRaw,'Sicherung vor Cloud-Abgleich');
-      cloudApplying=true;all=remoteObj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();cloudApplying=false;
-      cloudReady=true;cloudStatus('Cloud-Version geladen. Automatische Synchronisierung ist aktiv.');
+      saveMergedPlanLocally(merged,'Sicherung vor nicht-destruktivem Cloud-Abgleich');
+      cloudApplying=false;
+      cloudStatus('Lokale und Cloud-Einträge wurden zusammengeführt. Synchronisierung läuft …');
+      await cloudUpload(true);
     }else{
-      cloudReady=true;await cloudUpload(false);
+      cloudApplying=true;
+      if(localRaw!==remoteRaw)saveMergedPlanLocally(merged,'Sicherung vor Laden der Cloud-Daten');
+      cloudApplying=false;
+      cloudReady=true;cloudStatus('Cloud und dieses Gerät sind aktuell.');
     }
   }catch(e){cloudReady=false;cloudHandledUser=null;cloudStatus('Cloud-Abgleich fehlgeschlagen: '+e.message+' Bitte einmal abmelden und erneut anmelden.',true)}
   finally{cloudApplying=false}
