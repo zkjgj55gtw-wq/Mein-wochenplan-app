@@ -1345,10 +1345,7 @@ function prepareSimplePrint(){
 }
 function cleanupSimplePrint(){document.querySelectorAll('.mood-print-value').forEach(el=>el.remove());document.body.classList.remove('simple-week-print');}
 $('print').onclick=()=>{document.body.classList.add('simple-week-print');prepareSimplePrint();window.print()};
-window.addEventListener('afterprint',()=>{
- cleanupSimplePrint();
- if(document.body.classList.contains('range-print'))document.body.classList.remove('range-print','simple-week-print');
-});
+window.addEventListener('afterprint',cleanupSimplePrint);
 $('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importbtn').onclick=()=>$('importfile').click();
 $('importfile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error();if(confirm('Import ersetzt alle derzeit gespeicherten Wochenpläne. Der aktuelle Stand wird vorher gesichert. Fortfahren?')){const previous=localStorage.getItem('meinWochenplanV2');if(previous)saveBackupSnapshot(previous,'Sicherung vor Import');all=obj;localStorage.setItem('meinWochenplanV2',JSON.stringify(all));render();persist('Import abgeschlossen')}}catch(err){alert('Diese Datei ist kein gültiger Wochenplan-Export.')}e.target.value=''};
@@ -1542,10 +1539,9 @@ function printDateRange(start,end){
   }
   monday.setDate(monday.getDate()+7);
  }
- document.body.classList.add('range-print','simple-week-print');
+ document.body.classList.add('range-print');
  $('range-print-now').onclick=()=>window.print();
- $('range-back').onclick=()=>{document.body.classList.remove('range-print','simple-week-print');$('rangepages').innerHTML='';};
- try{window.print()}catch(e){}
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
 }
 
 function openRangeDialog(fromDate=null,toDate=null){
