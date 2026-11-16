@@ -30,26 +30,43 @@ body,header,.gridwrap,.note,.toolbar button,.toolbar label,.weekgrid th,.weekgri
 
 #rangepages{display:none}
 body.range-print>header,body.range-print>main{display:none!important}
-body.range-print #rangepages{display:block;padding:12px;background:white}
+body.range-print #rangepages{display:block;padding:12px;background:#fff;color:#111}
 .range-actions{display:flex;gap:8px;margin:0 0 12px}
 .range-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
-
+.range-page{background:#fff;color:#111;break-after:page;page-break-after:always;padding:0}
+.range-page:last-child{break-after:auto;page-break-after:auto}
+.range-page h2{font-size:16px;margin:0 0 4px;color:#111}
+.range-page .range-subtitle{font-size:9px;color:#444;margin:0 0 6px}
+.range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px;color:#111}
+.range-table th,.range-table td{padding:1px 3px;vertical-align:middle}
+.range-table thead th{border:1px solid #b8b8b8;background:#eee!important;color:#111;text-align:center;font-size:9px;padding:4px 2px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.range-table thead th:first-child{width:43px}
+.range-table .r-hour{width:43px;text-align:center;background:#f7f7f7;color:#222;font-size:8px;font-weight:600;border:1px solid #c7c7c7}
+.range-table .r-half{height:4.1mm}
+.range-table .r-half td{border-top:1px solid #ededed;border-bottom:1px solid #ededed;border-left:1px solid #e2e2e2;border-right:1px solid #e2e2e2}
+.range-table .r-half.hour-start td{border-top-color:#c7c7c7}
+.range-table .r-cell{position:relative;white-space:pre-wrap;overflow-wrap:anywhere;height:4.1mm;font-size:8.5px;line-height:1.15}
+.range-table .r-entry{display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:3.7mm}
+.range-table .r-activity{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.range-table .r-mood{flex:0 0 auto;font-size:9px;font-weight:700;text-align:right;color:#111}
+.range-table .r-cell.run-start,.range-table .r-cell.run-middle,.range-table .r-cell.run-end,.range-table .r-cell.run-single{border-left:1px solid #666;border-right:1px solid #666}
+.range-table .r-cell.run-start,.range-table .r-cell.run-single{border-top:1px solid #666}
+.range-table .r-cell.run-middle{border-top-color:transparent;border-bottom-color:transparent}
+.range-table .r-cell.run-end{border-bottom:1px solid #666}
+.range-table .r-cell.run-start{border-bottom-color:transparent}
+.range-table .r-cell.run-end{border-top-color:transparent}
+.range-note{font-size:9px;margin-top:6px;white-space:pre-wrap;border:1px solid #d7d7d7;padding:4px}
 @media print{
-  body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
-  body.range-print #rangepages{display:block!important}
-  .range-page{break-after:page;page-break-after:always;padding:0}
-  .range-page:last-child{break-after:auto;page-break-after:auto}
-  .range-page h2{font-size:15px;margin:0 0 5px}
-  .range-page .range-subtitle{font-size:9px;margin:0 0 6px}
-  .range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8px}
-  .range-table th,.range-table td{border:1px solid #999;padding:2px;vertical-align:top}
-  .range-table th{background:#eee!important;print-color-adjust:exact}
-  .range-table th:first-child{width:40px}
-  .range-table .r-hour{width:40px;text-align:center}
-  .range-table .r-cell{height:20px;white-space:pre-wrap;overflow-wrap:anywhere}
-  .range-table .r-mood{font-size:7px;color:#333}
-  .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
-  @page{size:A4 landscape;margin:8mm}
+ body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
+ body.range-print #rangepages{display:block!important;padding:0}
+ body.range-print .range-actions{display:none!important}
+ body.range-print .range-page{break-after:page;page-break-after:always;padding:0}
+ body.range-print .range-page:last-child{break-after:auto;page-break-after:auto}
+ body.range-print .range-table{width:100%;border-collapse:collapse;table-layout:fixed}
+ body.range-print .range-table .r-half{height:4.1mm}
+ body.range-print .range-table .r-cell{height:4.1mm}
+ body.range-print .range-table .r-hour{background:#f7f7f7!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ @page{size:A4 landscape;margin:7mm}
 }
 #moodcurvepages{display:none}
 body.moodcurve-print>header,body.moodcurve-print>main,body.moodcurve-print>#rangepages{display:none!important}
@@ -1388,35 +1405,79 @@ function printDateRange(start,end){
  if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
   alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
  }
- const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ const pages=$('rangepages');
+ pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ const dayStart=new Date(start.getFullYear(),start.getMonth(),start.getDate(),0,0,0,0);
+ const dayEnd=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59,999);
  let monday=mondayOf(start);
  while(monday<=end){
   const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
   const week=all[key(monday)]||{cells:{},note:''};
-  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
   const dates=[];
-  for(let i=0;i<7;i++){
-   const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
-   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
-   table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
+  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
+  for(let day=0;day<7;day++){
+   const d=new Date(monday);d.setDate(d.getDate()+day);dates.push(d);
+   const inRange=d>=dayStart&&d<=dayEnd;
+   table+='<th>'+DAYS[day]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
   }
   table+='</tr></thead><tbody>';
+
+  // Zwei Zeilen je Stunde: :00 und :30. Beide Aktivitätsfelder werden aus
+  // derselben Datenstruktur gelesen wie in der normalen Wochenansicht.
+  const slots=[];
   for(let hour=5;hour<=23;hour++){
-   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
-   for(const d of dates){
-    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
-    const data=week.cells?.[key(d)+'_'+hour]||{};
-    const activity=inRange?(data.activity||''):'';
-    const mood=inRange&&data.mood?'<div class="r-mood">Stimmung: '+escapeHtml(data.mood)+'</div>':'';
-    table+='<td class="r-cell">'+escapeHtml(activity)+mood+'</td>';
+   slots.push({hour,minute:0,label:String(hour).padStart(2,'0')+':00'});
+   slots.push({hour,minute:30,label:String(hour).padStart(2,'0')+':30'});
+  }
+  const perDay=dates.map(d=>{
+   const allowed=d>=dayStart&&d<=dayEnd;
+   return slots.map(slot=>{
+    const suffix=slot.minute===30?'_30':'';
+    const data=week.cells?.[key(d)+'_'+slot.hour+suffix]||{};
+    const activity=allowed?String(data.activity||''):'';
+    // Stimmung wird wie im Wochenplan auf Stundenbasis gezeigt; ein eventuell
+    // vorhandener älterer Halbstundenwert bleibt ebenfalls sichtbar.
+    const mood=allowed?String(data.mood||''):'';
+    return {activity,mood};
+   });
+  });
+
+  for(let row=0;row<slots.length;row++){
+   const slot=slots[row];
+   table+='<tr class="r-half'+(slot.minute===0?' hour-start':'')+'"><th class="r-hour">'+slot.label+'</th>';
+   for(let day=0;day<7;day++){
+    const item=perDay[day][row];
+    const activity=item.activity.trim();
+    const mood=slot.minute===0?item.mood:(item.mood||'');
+    const moodHtml=mood?'<span class="r-mood">'+escapeHtml(mood)+'</span>':'';
+    table+='<td class="r-cell"><div class="r-entry"><span class="r-activity">'+escapeHtml(activity)+'</span>'+moodHtml+'</div></td>';
    }
    table+='</tr>';
   }
+
+  // Eintragsrahmen je Tag: vom Beginn einer Aktivität bis zur nächsten
+  // eingetragenen Aktivität; dazwischen werden nur dezente Rasterlinien gezeigt.
+  // Klassen werden nach dem Tabellenaufbau auf die jeweiligen Tageszellen gesetzt.
   table+='</tbody></table>';
   const section=document.createElement('section');section.className='range-page';
   const note=(week.note||'').trim();
   section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
   pages.appendChild(section);
+
+  const rows=[...section.querySelectorAll('.range-table tbody tr')];
+  for(let day=0;day<7;day++){
+   const cells=rows.map(row=>row.children[day+1]);
+   let i=0;
+   while(i<cells.length){
+    if(!perDay[day][i].activity.trim()){i++;continue;}
+    let runEnd=i;
+    while(runEnd+1<cells.length&&!perDay[day][runEnd+1].activity.trim())runEnd++;
+    cells[i].classList.add(runEnd===i?'run-single':'run-start');
+    for(let j=i+1;j<runEnd;j++)cells[j].classList.add('run-middle');
+    if(runEnd>i)cells[runEnd].classList.add('run-end');
+    i=runEnd+1;
+   }
+  }
   monday.setDate(monday.getDate()+7);
  }
  document.body.classList.add('range-print');
