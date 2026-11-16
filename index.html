@@ -46,10 +46,11 @@ body.range-print #rangepages{display:block;padding:12px;background:white}
   .range-table th{background:#eee!important;print-color-adjust:exact}
   .range-table th:first-child{width:40px}
   .range-table .r-hour{width:40px;text-align:center}
-  .range-table .r-cell{height:20px;white-space:normal;overflow-wrap:anywhere}
+  .range-table .r-cell{height:13px;white-space:normal;overflow-wrap:anywhere}
   .range-table .r-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:5px;width:100%;min-width:0}
   .range-table .r-activity{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:8px;line-height:1.2}
-  .range-table .r-mood{justify-self:end;align-self:start;margin-left:auto;font-size:12px;line-height:1;font-weight:700;text-align:right;white-space:nowrap;color:#111}
+  .range-table .r-mood{justify-self:end;align-self:start;margin-left:auto;font-size:10px;line-height:1;font-weight:700;text-align:right;white-space:nowrap;color:#111}
+  .range-table .r-day-note{height:auto;min-height:18px;white-space:pre-wrap;font-size:7px}
   .range-note{font-size:8px;margin-top:5px;white-space:pre-wrap}
   @page{size:A4 landscape;margin:8mm}
 }
@@ -326,6 +327,42 @@ body.authenticated > #cloudpanel { display:none !important; }
   .moodcurve-chart line { stroke: #d8ded8 !important; }
   .moodcurve-chart text { fill: #354238 !important; }
   .moodcurve-chart circle { fill: #294b38 !important; stroke: #fff !important; }
+}
+
+
+/* Drucklesbarkeit: größere Schrift und Stimmungszahlen, ohne das schlichte Raster zu verändern. */
+@media print {
+  body.simple-week-print .weekgrid thead th { font-size:10px !important; padding:5px 3px !important; }
+  body.simple-week-print .hour-time { font-size:9px !important; }
+  body.simple-week-print .hour-time small { font-size:7.5px !important; }
+  body.simple-week-print .hourday .activity { font-size:9px !important; line-height:1.15 !important; }
+  body.simple-week-print .mood-print-value { font-size:11px !important; font-weight:700 !important; }
+  body.simple-week-print .daynote { font-size:9px !important; }
+  body.simple-week-print .note label { font-size:9px !important; }
+  body.simple-week-print .note textarea { font-size:9px !important; }
+  body.simple-week-print .printtitle { font-size:10px !important; }
+}
+
+/* Zeitraumdruck: gleiches schlichtes Tabellenbild wie beim normalen Wochendruck. */
+@media print {
+  body.range-print #rangepages { padding:0 !important; background:#fff !important; color:#111 !important; }
+  body.range-print .range-page { padding:0 !important; color:#111 !important; }
+  body.range-print .range-page h2 { font-size:16px !important; font-weight:700 !important; margin:0 0 4px !important; color:#111 !important; }
+  body.range-print .range-page .range-subtitle { font-size:10px !important; color:#333 !important; margin:0 0 7px !important; }
+  body.range-print .range-table { width:100% !important; border-collapse:collapse !important; table-layout:fixed !important; font-size:9px !important; color:#111 !important; }
+  body.range-print .range-table th,
+  body.range-print .range-table td { border:1px solid #b8b8b8 !important; padding:2px 3px !important; vertical-align:middle !important; }
+  body.range-print .range-table thead th { background:#eee !important; color:#111 !important; font-size:10px !important; font-weight:700 !important; text-align:center !important; print-color-adjust:exact; }
+  body.range-print .range-table th:first-child,
+  body.range-print .range-table .r-hour { width:43px !important; min-width:43px !important; text-align:center !important; font-size:8.5px !important; font-weight:600 !important; background:#f5f5f5 !important; }
+  body.range-print .range-table .r-cell { height:17px !important; min-height:17px !important; }
+  body.range-print .range-table .r-entry { display:grid !important; grid-template-columns:minmax(0,1fr) 20px !important; align-items:stretch !important; gap:3px !important; width:100% !important; min-width:0 !important; }
+  body.range-print .range-table .r-activity { min-width:0 !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; font-size:9px !important; line-height:1.15 !important; color:#111 !important; }
+  body.range-print .range-table .r-mood { display:flex !important; align-items:center !important; justify-content:center !important; min-width:20px !important; font-size:11px !important; line-height:1 !important; font-weight:700 !important; text-align:center !important; color:#111 !important; border-left:1px solid #888 !important; }
+  body.range-print .range-table .r-day-note { height:auto !important; min-height:22px !important; white-space:pre-wrap !important; overflow-wrap:anywhere !important; font-size:9px !important; }
+  body.range-print .range-note { font-size:9px !important; margin-top:6px !important; white-space:pre-wrap !important; color:#111 !important; }
+  body.range-print .range-actions { display:none !important; }
+  @page { size:A4 landscape; margin:7mm; }
 }
 
 </style>
@@ -1456,7 +1493,12 @@ function prepareSimplePrint(){
  }
 }
 function cleanupSimplePrint(){document.querySelectorAll('.mood-print-value').forEach(el=>el.remove());document.body.classList.remove('simple-week-print');}
-$('print').onclick=()=>{document.body.classList.add('simple-week-print');prepareSimplePrint();window.print()};
+// Normaler Wochendruck: die bewährte, schlichte PDF-Tabelle direkt aus der Wochenansicht.
+$('print').onclick=()=>{
+ document.body.classList.add('simple-week-print');
+ prepareSimplePrint();
+ window.print();
+};
 window.addEventListener('afterprint',cleanupSimplePrint);
 $('export').onclick=()=>{const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mein-wochenplan.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importbtn').onclick=()=>$('importfile').click();
@@ -1564,31 +1606,49 @@ function printDateRange(start,end){
  if(!(start instanceof Date)||!(end instanceof Date)||isNaN(start)||isNaN(end)||start>end){
   alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
  }
- const pages=$('rangepages');pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
- let monday=mondayOf(start);
- while(monday<=end){
+ const pages=$('rangepages');
+ pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ const rangeStart=new Date(start);rangeStart.setHours(0,0,0,0);
+ const rangeEnd=new Date(end);rangeEnd.setHours(23,59,59,999);
+ let monday=mondayOf(rangeStart);
+ while(monday<=rangeEnd){
   const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
-  const week=all[key(monday)]||{cells:{},note:''};
+  const week=all[key(monday)]||{cells:{},note:'',dayNotes:{}};
   let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
   const dates=[];
   for(let i=0;i<7;i++){
    const d=new Date(monday);d.setDate(d.getDate()+i);dates.push(d);
-   const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
+   const inRange=d>=rangeStart&&d<=rangeEnd;
    table+='<th>'+DAYS[i]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
   }
   table+='</tr></thead><tbody>';
-  for(let hour=5;hour<=23;hour++){
-   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':00</th>';
+
+  // Beide Halbstunden eines Zeitfensters ausgeben: 06:00 und 06:30 usw.
+  for(let minutes=5*60;minutes<=23*60+30;minutes+=30){
+   const hour=Math.floor(minutes/60),half=minutes%60;
+   const timeKey=key(monday)+'_'+hour+(half===30?'_30':'');
+   table+='<tr><th class="r-hour">'+String(hour).padStart(2,'0')+':'+String(half).padStart(2,'0')+'</th>';
    for(const d of dates){
-    const inRange=d>=new Date(start.getFullYear(),start.getMonth(),start.getDate()) && d<=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59);
-    const data=week.cells?.[key(d)+'_'+hour]||{};
-    const activity=inRange?(data.activity||''):'';
-    const mood=inRange&&data.mood?'<div class="r-mood">'+escapeHtml(data.mood)+'</div>':'';
+    const inRange=d>=rangeStart&&d<=rangeEnd;
+    const cellKey=key(d)+'_'+hour+(half===30?'_30':'');
+    const data=week.cells?.[cellKey]||{};
+    const activity=inRange?String(data.activity||''):'';
+    // Die Stimmung gehört zum vollen Stundenfeld und wird daher nur um :00 ausgegeben.
+    const mood=inRange&&half===0&&data.mood!==''&&data.mood!=null
+      ?'<div class="r-mood">'+escapeHtml(data.mood)+'</div>':'';
     table+='<td class="r-cell"><div class="r-entry"><div class="r-activity">'+escapeHtml(activity)+'</div>'+mood+'</div></td>';
    }
    table+='</tr>';
   }
-  table+='</tbody></table>';
+
+  // Tagesnotizen werden wie die Aktivitäten nur innerhalb des gewählten Zeitraums gedruckt.
+  table+='<tr class="r-notes-row"><th class="r-hour">Notiz</th>';
+  for(const d of dates){
+   const inRange=d>=rangeStart&&d<=rangeEnd;
+   const dayNote=inRange?String(week.dayNotes?.[key(d)]||''):'';
+   table+='<td class="r-cell r-day-note">'+escapeHtml(dayNote)+'</td>';
+  }
+  table+='</tr></tbody></table>';
   const section=document.createElement('section');section.className='range-page';
   const note=(week.note||'').trim();
   section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
@@ -1597,7 +1657,7 @@ function printDateRange(start,end){
  }
  document.body.classList.add('range-print');
  $('range-print-now').onclick=()=>window.print();
- $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
+ $('range-back').onclick=()=>{document.body.classList.remove('range-print');pages.innerHTML='';};
  try{window.print()}catch(e){}
 }
 function openRangeDialog(fromDate=null,toDate=null){
