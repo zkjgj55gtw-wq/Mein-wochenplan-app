@@ -31,50 +31,32 @@ body,header,.gridwrap,.note,.toolbar button,.toolbar label,.weekgrid th,.weekgri
 #rangepages{display:none}
 body.range-print>header,body.range-print>main{display:none!important}
 body.range-print #rangepages{display:block;padding:12px;background:#fff;color:#111}
-.range-actions{position:sticky;top:0;z-index:9999;display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:12px 10px;background:#fff;border-bottom:2px solid #d5d5d5;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-.range-actions-hint{font-size:14px;line-height:1.35;font-weight:600;color:#222;text-align:center}
-.range-actions button{display:block;width:100%;min-height:50px;padding:12px 16px;border:1px solid #1d6338;border-radius:10px;background:#247a43;color:#fff;font-size:16px;font-weight:700;letter-spacing:.1px}
-.range-actions button#range-back{min-height:42px;background:#f2f2f2;border-color:#aaa;color:#222;font-size:14px;font-weight:600}
-@media print{.range-actions{display:none!important}}
+.range-actions{display:flex;gap:8px;margin:0 0 12px}
+.range-actions button{padding:10px 14px;border:1px solid #b8c4ba;border-radius:8px;background:#294b38;color:#fff;font-size:14px}
 .range-page{background:#fff;color:#111;break-after:page;page-break-after:always;padding:0}
 .range-page:last-child{break-after:auto;page-break-after:auto}
 .range-page h2{font-size:16px;margin:0 0 4px;color:#111}
 .range-page .range-subtitle{font-size:9px;color:#444;margin:0 0 6px}
-.range-weekgrid{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
-.range-page h2{font-size:16px;margin:0 0 4px;color:#111}
-.range-page .range-subtitle{font-size:9px;color:#444;margin:0 0 6px}
-.range-weekgrid .hourday{display:grid;grid-template-columns:minmax(0,1fr) 18px;grid-template-rows:minmax(13px,auto) minmax(13px,auto);gap:0;min-height:27px}
-.range-weekgrid .activity{display:block;width:100%;min-width:0;min-height:12px;height:auto;max-height:none;resize:none;overflow:hidden;border:0;border-left:1px solid #777;border-right:1px solid #777;border-radius:0;padding:1px 2px;background:#fff;color:#111;font:7px Arial,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}
-.range-weekgrid .activity-first{grid-row:1}
-.range-weekgrid .activity-second{grid-row:2}
-.range-weekgrid .mood-print-value{display:flex;grid-column:2;grid-row:1 / span 2;align-items:center;justify-content:center;min-width:18px;border-left:1px solid #aaa;background:#fff;color:#111;font:bold 8px Arial,sans-serif}
-.range-weekgrid .mood-print-value.mood-continuation{color:#111}
-.range-weekgrid .hour-slot{padding:0!important;vertical-align:middle}
-.range-weekgrid .hour-time{width:43px;min-width:43px;background:#f5f5f5;color:#111;font-size:7px;text-align:center}
-.range-weekgrid .hour-time small{font-size:6px}
+.range-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px;color:#111}
+.range-table th,.range-table td{padding:1px 3px;vertical-align:middle}
+.range-table thead th{border:1px solid #b8b8b8;background:#eee!important;color:#111;text-align:center;font-size:9px;padding:4px 2px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.range-table thead th:first-child{width:43px}
+.range-table .r-hour{width:43px;text-align:center;background:#f7f7f7;color:#222;font-size:8px;font-weight:600;border:1px solid #c7c7c7}
+.range-table .r-hour small{display:block;font-size:6px;font-weight:400;color:#555}
+.range-table .r-hour-row{height:8.2mm}
+.range-table .r-hour-cell{height:8.2mm;border:1px solid #d0d0d0}
+.range-table .r-day-layout{display:grid;grid-template-columns:minmax(0,1fr) 22px;min-height:8mm;height:100%;align-items:stretch}
+.range-table .r-activity-stack{display:grid;grid-template-rows:1fr 1fr;min-width:0}
+.range-table .r-half-entry{min-width:0;min-height:4mm;padding:1px 3px;display:flex;align-items:center;white-space:pre-wrap;overflow-wrap:anywhere;font-size:8.5px;line-height:1.15;border-left:1px solid transparent;border-right:1px solid transparent;border-top:1px solid transparent;border-bottom:1px solid transparent}
+.range-table .r-half-entry.run-start,.range-table .r-half-entry.run-middle,.range-table .r-half-entry.run-end,.range-table .r-half-entry.run-single{border-left:1px solid #666;border-right:1px solid #666}
+.range-table .r-half-entry.run-start,.range-table .r-half-entry.run-single{border-top:1px solid #666}
+.range-table .r-half-entry.run-middle{border-top-color:transparent;border-bottom-color:transparent}
+.range-table .r-half-entry.run-end{border-bottom:1px solid #666}
+.range-table .r-half-entry.run-start{border-bottom-color:transparent}
+.range-table .r-half-entry.run-end{border-top-color:transparent}
+.range-table .r-mood{grid-column:2;grid-row:1 / span 2;display:flex;align-items:center;justify-content:center;min-width:22px;border-left:1px solid #b8b8b8;font-size:12px;line-height:1;font-weight:700;text-align:center;color:#111}
 .range-note{font-size:9px;margin-top:6px;white-space:pre-wrap;border:1px solid #d7d7d7;padding:4px}
 @media print{
- body.range-print .range-weekgrid{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
- body.range-print .range-weekgrid th,body.range-print .range-weekgrid td{border:1px solid #888!important;padding:2px!important}
- body.range-print .range-weekgrid thead th{background:#eee!important;color:#111!important;font-size:8px!important;padding:4px 2px!important}
- body.range-print .range-weekgrid thead th:first-child,body.range-print .range-weekgrid .hour-time{width:43px!important;min-width:43px!important}
- body.range-print .range-weekgrid .hour-time{background:#f5f5f5!important;color:#111!important;font-size:7px!important}
- body.range-print .range-weekgrid .hour-time small{font-size:6px!important}
- body.range-print .range-weekgrid .hourday{display:grid!important;grid-template-columns:minmax(0,1fr) 18px!important;grid-template-rows:18px 18px!important;gap:0!important;min-height:36px!important}
- body.range-print .range-weekgrid .activity{display:block!important;width:100%!important;min-height:12px!important;height:auto!important;max-height:none!important;resize:none!important;overflow:hidden!important;border:0!important;border-left:1px solid #666!important;border-right:1px solid #666!important;border-radius:0!important;padding:1px 2px!important;background:#fff!important;color:#111!important;font:7px Arial,sans-serif!important}
- body.range-print .range-weekgrid .mood-print-value{display:flex!important;grid-column:2!important;grid-row:1 / span 2!important;align-items:center!important;justify-content:center!important;min-width:18px!important;border-left:1px solid #888!important;color:#111!important;background:#fff!important;font:bold 8px Arial,sans-serif!important}
- body.range-print .range-weekgrid .hour-slot{padding:0!important}
- body.range-print .range-weekgrid tbody td{border-top-color:#e7e7e7!important;border-bottom-color:#e7e7e7!important;border-left-color:#888!important;border-right-color:#888!important}
- body.range-print .range-weekgrid .activity.print-run-start{border-top:1px solid #666!important;border-bottom:0!important}
- body.range-print .range-weekgrid .activity.print-run-middle{border-top:0!important;border-bottom:0!important}
- body.range-print .range-weekgrid .activity.print-run-end{border-top:0!important;border-bottom:1px solid #666!important}
- body.range-print .range-weekgrid .activity.print-run-single{border-top:1px solid #666!important;border-bottom:1px solid #666!important}
- body.range-print .range-weekgrid .mood-print-value.print-run-start{border-top:1px solid #666!important;border-bottom:0!important}
- body.range-print .range-weekgrid .mood-print-value.print-run-middle{border-top:0!important;border-bottom:0!important}
- body.range-print .range-weekgrid .mood-print-value.print-run-end{border-top:0!important;border-bottom:1px solid #666!important}
- body.range-print .range-weekgrid .mood-print-value.print-run-single{border-top:1px solid #666!important;border-bottom:1px solid #666!important}
- body.range-print .range-weekgrid .activity.activity-first{border-bottom-color:#ededed!important}
- body.range-print .range-weekgrid .mood-print-value.mood-continuation{border-top-color:transparent!important;border-bottom-color:transparent!important}
  body.range-print>header,body.range-print>main,body.range-print>#voicedialog,body.range-print>#rangedialog{display:none!important}
  body.range-print #rangepages{display:block!important;padding:0}
  body.range-print .range-actions{display:none!important}
@@ -1456,100 +1438,85 @@ function printDateRange(start,end){
   alert('Bitte prüfe den Zeitraum. Das Startdatum muss vor oder am Enddatum liegen.');return;
  }
  const pages=$('rangepages');
- pages.innerHTML='<div class="range-actions"><div class="range-actions-hint">Druckvorschau bereit – zum Drucken bitte auf den grünen Button tippen.</div><button type="button" id="range-print-now">JETZT DRUCKEN / ALS PDF SPEICHERN</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
+ pages.innerHTML='<div class="range-actions"><button type="button" id="range-print-now">Drucken / als PDF</button><button type="button" id="range-back">Zurück zum Wochenplan</button></div>';
  const dayStart=new Date(start.getFullYear(),start.getMonth(),start.getDate(),0,0,0,0);
  const dayEnd=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59,999);
  let monday=mondayOf(start);
  while(monday<=end){
   const sunday=new Date(monday);sunday.setDate(sunday.getDate()+6);
-  const week=all[key(monday)]||{cells:{},note:'',dayNotes:{}};
+  const week=all[key(monday)]||{cells:{},note:''};
   const dates=[];
-  const section=document.createElement('section');section.className='range-page';
-  let table='<table class="weekgrid range-weekgrid"><thead><tr><th>Zeit</th>';
+  let table='<table class="range-table"><thead><tr><th>Uhrzeit</th>';
   for(let day=0;day<7;day++){
    const d=new Date(monday);d.setDate(d.getDate()+day);dates.push(d);
    const inRange=d>=dayStart&&d<=dayEnd;
-   table+='<th>'+DAYS[day]+' '+fmt(d).slice(0,5)+(inRange?'':' *')+'</th>';
+   table+='<th>'+DAYS[day]+'<br>'+fmt(d)+(inRange?'':' *')+'</th>';
   }
   table+='</tr></thead><tbody>';
-  const rowsData=[];
-  for(let hour=5;hour<=23;hour++){
-   table+='<tr class="hourrow"><th class="hour-time"><span>'+String(hour).padStart(2,'0')+':00</span><small>– '+String((hour+1)%24).padStart(2,'0')+':00</small></th>';
-   const row=[];
+
+  // Gleiche Grundstruktur wie beim normalen Wochendruck:
+  // eine Stundenzeile mit zwei Halbstundenfeldern und einer gemeinsamen Stimmungsspalte.
+  const perDay=dates.map(d=>{
+   const allowed=d>=dayStart&&d<=dayEnd;
+   return Array.from({length:19},(_,idx)=>{
+    const hour=idx+5;
+    const full=week.cells?.[key(d)+'_'+hour]||{};
+    const half=week.cells?.[key(d)+'_'+hour+'_30']||{};
+    return {
+     first:allowed?String(full.activity||''):'',
+     second:allowed?String(half.activity||''):'',
+     mood:allowed?String(full.mood||half.mood||''):''
+    };
+   });
+  });
+
+  for(let idx=0;idx<19;idx++){
+   const hour=idx+5;
+   table+='<tr class="r-hour-row"><th class="r-hour"><span>'+String(hour).padStart(2,'0')+':00</span><small>– '+String((hour+1)%24).padStart(2,'0')+':00</small></th>';
    for(let day=0;day<7;day++){
-    const d=dates[day],allowed=d>=dayStart&&d<=dayEnd,dateKey=key(d);
-    const full=week.cells?.[dateKey+'_'+hour]||{};
-    const half=week.cells?.[dateKey+'_'+hour+'_30']||{};
-    const first=allowed?String(full.activity||''):'';
-    const second=allowed?String(half.activity||''):'';
-    const mood=allowed?String(full.mood||half.mood||''):'';
-    row.push({first,second,mood});
-    table+='<td class="hour-slot"><div class="hourday"><textarea class="activity activity-first" readonly>'+escapeHtml(first)+'</textarea><textarea class="activity activity-second" readonly>'+escapeHtml(second)+'</textarea><span class="mood-print-value">'+escapeHtml(mood)+'</span></div></td>';
+    const item=perDay[day][idx];
+    const moodHtml=item.mood?'<span class="r-mood">'+escapeHtml(item.mood)+'</span>':'';
+    table+='<td class="r-hour-cell"><div class="r-day-layout"><div class="r-activity-stack"><div class="r-half-entry">'+escapeHtml(item.first)+'</div><div class="r-half-entry">'+escapeHtml(item.second)+'</div></div>'+moodHtml+'</div></td>';
    }
-   rowsData.push(row);table+='</tr>';
+   table+='</tr>';
   }
   table+='</tbody></table>';
+  const section=document.createElement('section');section.className='range-page';
   const note=(week.note||'').trim();
-  const subtitle='Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums';
-  section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">'+subtitle+'</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
+  section.innerHTML='<h2>Mein Wochenplan – '+fmt(monday)+' bis '+fmt(sunday)+'</h2><p class="range-subtitle">Gewählter Zeitraum: '+fmt(start)+' bis '+fmt(end)+' · * Tag außerhalb des gewählten Zeitraums</p>'+table+(note?'<div class="range-note"><strong>Notizen zur Woche:</strong> '+escapeHtml(note)+'</div>':'');
   pages.appendChild(section);
 
-  // Dieselbe Lauf-/Rahmenlogik wie beim normalen Wochendruck.
-  const rows=[...section.querySelectorAll('tbody tr.hourrow')];
+  // Aktivitäten werden je Tag als zusammenhängender Bereich dargestellt.
+  // Die halbstündigen Einträge bleiben einzeln erhalten.
+  const rows=[...section.querySelectorAll('.range-table tbody tr')];
   for(let day=0;day<7;day++){
    const fields=[];
-   rows.forEach((row,ri)=>{
-    const cell=row.children[day+1],first=cell?.querySelector('.activity-first'),second=cell?.querySelector('.activity-second');
-    if(first)fields.push(first);if(second)fields.push(second);
+   rows.forEach((row,rowIndex)=>{
+    const stack=row.children[day+1]?.querySelector('.r-activity-stack');
+    if(stack){
+     const entries=[...stack.children];
+     fields.push({el:entries[0],value:perDay[day][rowIndex].first});
+     fields.push({el:entries[1],value:perDay[day][rowIndex].second});
+    }
    });
    let i=0;
    while(i<fields.length){
     if(!fields[i].value.trim()){i++;continue;}
-    let endRun=i;while(endRun+1<fields.length&&!fields[endRun+1].value.trim())endRun++;
-    fields[i].classList.add(endRun===i?'print-run-single':'print-run-start');
-    for(let j=i+1;j<endRun;j++)fields[j].classList.add('print-run-middle');
-    if(endRun>i)fields[endRun].classList.add('print-run-end');
-    i=endRun+1;
-   }
-
-   // Stimmung wie im normalen Wochendruck: der letzte gewählte Wert läuft bis zur nächsten Änderung weiter.
-   const moodEls=rows.map(row=>row.children[day+1]?.querySelector('.mood-print-value'));
-   const moodValues=rowsData.map(row=>row[day]?.mood||'');
-   let moodStarted=false;
-   for(let i=0;i<moodEls.length;i++){
-    const el=moodEls[i];if(!el)continue;
-    el.textContent=moodValues[i];
-    if(moodValues[i]){moodStarted=true;el.classList.remove('mood-continuation');}
-    else if(moodStarted)el.classList.add('mood-continuation');
-   }
-   let lastMood=-1;
-   for(let i=0;i<moodValues.length;i++)if(moodValues[i]){lastMood=i;break;}
-   if(lastMood>=0){
-    let moodRunStart=lastMood;
-    for(let i=lastMood+1;i<=moodEls.length;i++){
-     if(i===moodEls.length||moodValues[i]){
-      const moodRunEnd=i-1;
-      if(moodRunEnd===moodRunStart)moodEls[moodRunStart]?.classList.add('print-run-single');
-      else{
-       moodEls[moodRunStart]?.classList.add('print-run-start');
-       for(let j=moodRunStart+1;j<moodRunEnd;j++)moodEls[j]?.classList.add('print-run-middle');
-       moodEls[moodRunEnd]?.classList.add('print-run-end');
-      }
-      moodRunStart=i;
-     }
-    }
+    let runEnd=i;
+    while(runEnd+1<fields.length&&!fields[runEnd+1].value.trim())runEnd++;
+    fields[i].el.classList.add(runEnd===i?'run-single':'run-start');
+    for(let j=i+1;j<runEnd;j++)fields[j].el.classList.add('run-middle');
+    if(runEnd>i)fields[runEnd].el.classList.add('run-end');
+    i=runEnd+1;
    }
   }
   monday.setDate(monday.getDate()+7);
  }
  document.body.classList.add('range-print');
- $('range-print-now').addEventListener('click',function(){
-  // window.print() muss unmittelbar aus der bewussten Nutzeraktion aufgerufen werden (iOS Safari).
-  window.print();
- });
+ $('range-print-now').onclick=()=>window.print();
  $('range-back').onclick=()=>{document.body.classList.remove('range-print');$('rangepages').innerHTML='';};
+ try{window.print()}catch(e){}
 }
-
 function openRangeDialog(fromDate=null,toDate=null){
  const start=fromDate instanceof Date && !isNaN(fromDate) ? fromDate : anchor;
  const end=toDate instanceof Date && !isNaN(toDate) ? toDate : new Date(start);
